@@ -45,27 +45,24 @@ int drpc_client::do_rpc(drpc_host &srv, drpc_msg &m)
     }
     // request args
     {
-        int len = m.req->len;
-        send(sockfd, &len, sizeof(int), MSG_WAITALL);
-        send(sockfd, m.req, len, MSG_WAITALL);
+        send(sockfd, &m.req->len, sizeof(int), MSG_WAITALL);
+        send(sockfd, m.req->args, m.req->len, MSG_WAITALL);
     }
     // reply
     {
-        int len = m.rep->len;
-        send(sockfd, &len, sizeof(int), MSG_WAITALL);
-        send(sockfd, m.rep, len, MSG_WAITALL);
+        send(sockfd, &m.rep->len, sizeof(int), MSG_WAITALL);
+        send(sockfd, m.rep->args, m.rep->len, MSG_WAITALL);
     }
     // checksum
     {
         // todo
     }
 
-    // receive data
+    // receive RPC reply
     // reply
     {
-        int len;
-        recv(sockfd, &len, sizeof(int), MSG_WAITALL);
-        recv(sockfd, m.rep, len, MSG_WAITALL);
+        recv(sockfd, &m.rep->len, sizeof(int), MSG_WAITALL);
+        recv(sockfd, m.rep->args, m.rep->len, MSG_WAITALL);
     }
 
     return 0;

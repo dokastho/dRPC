@@ -3,6 +3,7 @@
 
 #include <map>
 #include <string>
+#include <mutex>
 #include "drpc_msg.h"
 
 struct drpc_host
@@ -16,13 +17,19 @@ class drpc_server
 private:
     std::map<std::string, void *> endpoints;
     drpc_host my_host;
+    void* srv_ptr;
+    std::mutex sock_lock;
+    
+    void parse_rpc(int);
+
+    void stub(drpc_msg&, int);
 
 public:
-    drpc_server(drpc_host);
+    drpc_server(drpc_host&);
 
     void publish_endpoint(std::string, void *);
 
-    void run_server();
+    int run_server();
 };
 
 class drpc_client
