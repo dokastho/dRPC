@@ -85,13 +85,13 @@ void drpc_server::parse_rpc(int sockfd)
 
 void drpc_server::stub(drpc_msg &m, int sockfd)
 {
-    void (*target_func)(drpc_msg&) = (void (*)(drpc_msg&))endpoints[m.target];
+    void (*target_func)(void*, drpc_msg&) = (void (*)(void*, drpc_msg&))endpoints[m.target];
     if (target_func == nullptr)
     {
         // ignore
         return;
     }
-    target_func(m);
+    target_func(srv_ptr, m);
     // send RPC reply
     // reply
     {
