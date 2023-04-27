@@ -23,33 +23,14 @@ debug: clean all
 all: $(LIB)
 
 $(LIB): $(OBJECTS)
-	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $(LIB) -shared 
-
-# Automatically generate any build rules for test*.cpp files
-# define make_tests
-#     ifeq ($$(PROJECTFILE),)
-# 	    @echo Edit PROJECTFILE variable to .cpp file with main\(\)
-# 	    @exit 1
-#     endif
-#     SRCS = $$(filter-out $$(PROJECTFILE), $$(SOURCES))
-#     OBJS = $$(SRCS:%.cpp=%.o)
-#     HDRS = $$(wildcard *.h)
-#     $(1): CXXFLAGS += -g3 -DDEBUG
-#     $(1): $$(OBJS) $$(HDRS) $(1).cpp
-# 	$$(CXX) $$(CXXFLAGS) $$(OBJS) $(1).cpp -o $(1)
-# endef
-# $(foreach test, $(TESTS), $(eval $(call make_tests, $(test))))
-
-alltests: clean $(TESTS)
+	$(CXX)  $(CXXFLAGS) $(OBJECTS)  -o  $(LIB)  -shared
 
 clean:
 	rm -f $(OBJECTS) $(EXECUTABLE) $(TESTS) $(PARTIAL_SUBMITFILE) $(FULL_SUBMITFILE)
 
+test1: test1.cpp drpc.so
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
 # rule for creating objects
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -fPIC -g -c $*.cpp
-
-# Compile the file server and tag this compilation
-fs_server: ${FS_OBJS} libfs_server.o
-	./autotag.sh
-	${CC} -o $@ $^ -pthread -ldl
