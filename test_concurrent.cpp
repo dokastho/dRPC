@@ -16,7 +16,7 @@ void func(int i)
     drpc_host h{"localhost", 8020};
     drpc_client c;
 
-    std::string s = "basic test client #" + std::to_string(i);
+    std::string s = "concurrent test client #" + std::to_string(i);
     basic_request breq;
     strcpy(breq.name, s.c_str());
     breq.seed = i;

@@ -13,7 +13,7 @@ int main()
 
     for (int i = 0; i < count; i++)
     {
-        std::string s = "basic test client #" + std::to_string(i);
+        std::string s = "many test client #" + std::to_string(i);
         basic_request breq;
         strcpy(breq.name, s.c_str());
         breq.seed = i;

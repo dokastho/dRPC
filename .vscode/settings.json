@@ -74,5 +74,10 @@
         "future": "cpp",
         "semaphore": "cpp",
         "stop_token": "cpp"
-    }
+    },
+    "python.testing.pytestArgs": [
+        "."
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
 }
