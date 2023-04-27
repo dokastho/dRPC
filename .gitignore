@@ -54,3 +54,5 @@ test_server
 test_basic
 test_many
 test_concurrent
+.pytest_cache/*
+__pycache__/*
