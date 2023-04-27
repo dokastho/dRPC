@@ -2,6 +2,9 @@
 #include <iostream>
 #include <string>
 #include "test_rpcs.h"
+#include <mutex>
+
+std::mutex l;
 
 class Test
 {
@@ -24,6 +27,7 @@ class Test
 
     static void foo(Test *t, drpc_msg &m)
     {
+        l.lock();
         basic_request* breq = (basic_request*)m.req->args;
         std::cout << t->id << " Received a message from " << breq->name << std::endl;
 
@@ -31,6 +35,7 @@ class Test
         basic_reply* brep = (basic_reply*)m.rep->args;
         brep->status = 0xf;
         m.rep->len = sizeof(basic_reply);
+        l.unlock();
     }
 
     ~Test()

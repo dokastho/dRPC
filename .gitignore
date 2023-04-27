@@ -50,5 +50,7 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
-test_client
 test_server
+test_basic
+test_many
+test_concurrent

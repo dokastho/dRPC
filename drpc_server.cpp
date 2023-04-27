@@ -45,7 +45,7 @@ int drpc_server::run_server()
         perror("port");
         return -1;
     }
-    listen(sockfd, 10);
+    listen(sockfd, 100);
 
     while (true)
     {
