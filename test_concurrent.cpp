@@ -6,6 +6,7 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <chrono>
 
 std::mutex m;
 bool did_pass = true;
@@ -18,11 +19,17 @@ void func(int i)
     std::string s = "basic test client #" + std::to_string(i);
     basic_request breq;
     strcpy(breq.name, s.c_str());
+    breq.seed = i;
     basic_reply brep{0};
     rpc_arg_wrapper req{(void *)&breq, sizeof(basic_request)};
     rpc_arg_wrapper rep{(void *)&brep, sizeof(basic_reply)};
 
-    c.Call(h, "foo", &req, &rep);
+    for (size_t i = 0; i < 10; i++)
+    {
+        c.Call(h, "foo", &req, &rep);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    
     if (brep.status != 0xf)
     {
         m.lock();
@@ -36,15 +43,15 @@ void func(int i)
 int main()
 {
     std::vector<std::thread> threads;
-    size_t count = 100;
+    int count = 100;
 
-    for (size_t i = 0; i < count; i++)
+    for (int i = 0; i < count; i++)
     {
         std::thread t(&func, i);
         threads.push_back(std::move(t));
     }
 
-    for (size_t i = 0; i < count; i++)
+    for (int i = 0; i < count; i++)
     {
         threads[i].join();
     }

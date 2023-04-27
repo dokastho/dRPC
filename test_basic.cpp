@@ -8,7 +8,7 @@ int main()
     drpc_host h{"localhost", 8020};
     drpc_client c;
 
-    basic_request breq{"basic test client"};
+    basic_request breq{"basic test client", 0};
     basic_reply brep{0};
     rpc_arg_wrapper req{(void*)&breq, sizeof(basic_request)};
     rpc_arg_wrapper rep{(void*)&brep, sizeof(basic_reply)};
