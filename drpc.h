@@ -17,15 +17,15 @@ class drpc_server
 private:
     std::map<std::string, void *> endpoints;
     drpc_host my_host;
-    void* srv_ptr;
+    void *srv_ptr;
     std::mutex sock_lock;
-    
+
     void parse_rpc(int);
 
     void stub(drpc_msg, int);
 
 public:
-    drpc_server(drpc_host&);
+    drpc_server(drpc_host &, void *srv_ptr_arg);
 
     void publish_endpoint(std::string, void *);
 

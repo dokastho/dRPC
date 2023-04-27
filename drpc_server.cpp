@@ -5,8 +5,11 @@
 #include <netinet/in.h> // struct sockaddr_in
 #include <string.h>
 #include <thread>
+#include <stdlib.h>
 
-drpc_server::drpc_server(drpc_host &host_args) : my_host(host_args) {}
+drpc_server::drpc_server(drpc_host &host_args, void* srv_ptr_arg) : my_host(host_args) {
+    srv_ptr = srv_ptr_arg;
+}
 
 void drpc_server::publish_endpoint(std::string func_name, void *func_ptr)
 {
@@ -55,25 +58,30 @@ int drpc_server::run_server()
 
 void drpc_server::parse_rpc(int sockfd)
 {
-    drpc_msg m;
+    rpc_arg_wrapper req, rep;
+    drpc_msg m{"", &req, &rep};
 
     // recv RPC
     // target function
     sock_lock.lock();
     {
-        int len;
-        recv(sockfd, &len, sizeof(int), MSG_WAITALL);
-        recv(sockfd, &m.target, len, MSG_WAITALL);
+        size_t len;
+        recv(sockfd, &len, sizeof(size_t), MSG_WAITALL);
+        char *buf = (char *)malloc(len);
+        recv(sockfd, buf, len, MSG_WAITALL);
+        m.target = buf;
     }
     // request args
     {
-        recv(sockfd, &m.req->len, sizeof(int), MSG_WAITALL);
-        recv(sockfd, &m.req->args, m.req->len, MSG_WAITALL);
+        recv(sockfd, &m.req->len, sizeof(size_t), MSG_WAITALL);
+        m.req->args = (void*)malloc(m.req->len);
+        recv(sockfd, m.req->args, m.req->len, MSG_WAITALL);
     }
     // reply
     {
-        recv(sockfd, &m.rep->len, sizeof(int), MSG_WAITALL);
-        recv(sockfd, &m.rep->args, m.rep->len, MSG_WAITALL);
+        recv(sockfd, &m.rep->len, sizeof(size_t), MSG_WAITALL);
+        m.rep->args = (void*)malloc(m.rep->len);
+        recv(sockfd, m.rep->args, m.rep->len, MSG_WAITALL);
     }
     // checksum
     {
@@ -99,7 +107,7 @@ void drpc_server::stub(drpc_msg m, int sockfd)
     // reply
     {
         sock_lock.lock();
-        send(sockfd, &m.rep->len, sizeof(int), MSG_WAITALL);
+        send(sockfd, &m.rep->len, sizeof(size_t), MSG_WAITALL);
         send(sockfd, m.rep->args, m.rep->len, MSG_WAITALL);
         sock_lock.unlock();
     }

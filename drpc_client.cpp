@@ -45,12 +45,12 @@ int drpc_client::do_rpc(drpc_host &srv, drpc_msg &m)
     }
     // request args
     {
-        send(sockfd, &m.req->len, sizeof(int), MSG_WAITALL);
+        send(sockfd, &m.req->len, sizeof(size_t), MSG_WAITALL);
         send(sockfd, m.req->args, m.req->len, MSG_WAITALL);
     }
     // reply
     {
-        send(sockfd, &m.rep->len, sizeof(int), MSG_WAITALL);
+        send(sockfd, &m.rep->len, sizeof(size_t), MSG_WAITALL);
         send(sockfd, m.rep->args, m.rep->len, MSG_WAITALL);
     }
     // checksum

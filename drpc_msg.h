@@ -7,7 +7,7 @@
 struct rpc_arg_wrapper
 {
     void *args;
-    uint32_t len;
+    size_t len;
 };
 
 struct drpc_msg

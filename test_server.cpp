@@ -14,7 +14,7 @@ class Test
     Test()
     {
         drpc_host d{"localhost", 8020};
-        s = new drpc_server(d);
+        s = new drpc_server(d, (void*)this);
         id = "Tester";
 
         s->publish_endpoint("foo", (void*)this->foo);
