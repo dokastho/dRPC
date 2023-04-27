@@ -44,8 +44,11 @@ int drpc_server::run_server()
     }
     listen(sockfd, 10);
 
-    int connectionfd = accept(sockfd, 0, 0);
-    parse_rpc(connectionfd);
+    while (true)
+    {
+        int connectionfd = accept(sockfd, 0, 0);
+        parse_rpc(connectionfd);
+    }
 
     return 0;
 }
@@ -85,7 +88,7 @@ void drpc_server::parse_rpc(int sockfd)
 
 void drpc_server::stub(drpc_msg m, int sockfd)
 {
-    static void (*target_func)(void*, drpc_msg&) = (void (*)(void*, drpc_msg&))endpoints[m.target];
+    static void (*target_func)(void *, drpc_msg &) = (void (*)(void *, drpc_msg &))endpoints[m.target];
     if (target_func == nullptr)
     {
         // ignore
