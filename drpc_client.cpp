@@ -4,6 +4,7 @@
 #include <netdb.h>      // gethostbyname(), struct hostent
 #include <netinet/in.h> // struct sockaddr_in
 #include <string.h>
+#include <unistd.h> //close
 
 void drpc_client::Call(drpc_host &srv, std::string funct, rpc_arg_wrapper *args, rpc_arg_wrapper *err)
 {
@@ -61,9 +62,11 @@ int drpc_client::do_rpc(drpc_host &srv, drpc_msg &m)
     // receive RPC reply
     // reply
     {
-        recv(sockfd, &m.rep->len, sizeof(int), MSG_WAITALL);
+        recv(sockfd, &m.rep->len, sizeof(size_t), MSG_WAITALL);
         recv(sockfd, m.rep->args, m.rep->len, MSG_WAITALL);
     }
+
+    close(sockfd);
 
     return 0;
 }
