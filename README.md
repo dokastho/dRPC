@@ -3,7 +3,7 @@ RPC library built from scratch with love ♥
 
 ## Summary
 
-I'm a big admirer of Golang, and often find myself wishing I had the flexibility of gRPC in C++. I discovered some existing options online, but ultimately decided that I could make my own version with minimal effort to best fit my use-cases.
+I'm a big admirer of Golang, and often find myself wishing I had the flexibility of gRPC in C++. I discovered some existing options online but ultimately decided that I could make my own version with minimal effort to best fit my use-cases.
 
 ## How It Works
 
