@@ -24,11 +24,12 @@ class Test
 
     static void foo(Test *t, drpc_msg &m)
     {
-        std::cout << "Hello World! from " << t->id << std::endl;
+        basic_request* breq = (basic_request*)m.req->args;
+        std::cout << t->id << " Received a message from " << breq->name << std::endl;
 
         // setup reply
-        basic_reply* b = (basic_reply*)m.rep->args;
-        b->status = 0xf;
+        basic_reply* brep = (basic_reply*)m.rep->args;
+        brep->status = 0xf;
         m.rep->len = sizeof(basic_reply);
     }
 

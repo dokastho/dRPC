@@ -8,11 +8,12 @@ int main()
     drpc_host h{"localhost", 8020};
     drpc_client c;
 
-    basic_reply* b = new basic_reply{0};
-    rpc_arg_wrapper req{nullptr, 0};
-    rpc_arg_wrapper rep{(void*)b, sizeof(basic_reply)};
+    basic_request breq{"basic test client"};
+    basic_reply brep{0};
+    rpc_arg_wrapper req{(void*)&breq, sizeof(basic_request)};
+    rpc_arg_wrapper rep{(void*)&brep, sizeof(basic_reply)};
 
     c.Call(h, "foo", &req, &rep);
-    assert(b->status == 0xf);
+    assert(brep.status == 0xf);
     return 0;
 }
