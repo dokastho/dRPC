@@ -22,7 +22,7 @@ private:
     
     void parse_rpc(int);
 
-    void stub(drpc_msg&, int);
+    void stub(drpc_msg, int);
 
 public:
     drpc_server(drpc_host&);

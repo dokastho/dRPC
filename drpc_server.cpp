@@ -83,9 +83,9 @@ void drpc_server::parse_rpc(int sockfd)
     t.detach();
 }
 
-void drpc_server::stub(drpc_msg &m, int sockfd)
+void drpc_server::stub(drpc_msg m, int sockfd)
 {
-    void (*target_func)(void*, drpc_msg&) = (void (*)(void*, drpc_msg&))endpoints[m.target];
+    static void (*target_func)(void*, drpc_msg&) = (void (*)(void*, drpc_msg&))endpoints[m.target];
     if (target_func == nullptr)
     {
         // ignore

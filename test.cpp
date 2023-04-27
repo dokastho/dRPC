@@ -10,7 +10,6 @@ class Test
         drpc_host host{"aaa", 0};
         drpc_server s(host);
         s.publish_endpoint("foo", this->foo);
-        // s.publish_endpoint("bar", bar);
     }
 
     static void foo(int a, int b) {}

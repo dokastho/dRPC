@@ -23,7 +23,7 @@ int drpc_client::do_rpc(drpc_host &srv, drpc_msg &m)
     struct hostent *host = gethostbyname(srv.hostname.c_str());
     if (host == nullptr)
     {
-        fprintf(stderr, "%s: unknown host\n", srv.hostname);
+        fprintf(stderr, "%s: unknown host\n", srv.hostname.c_str());
         return 1;
     }
     memcpy(&(addr.sin_addr), host->h_addr, host->h_length);
@@ -39,8 +39,8 @@ int drpc_client::do_rpc(drpc_host &srv, drpc_msg &m)
     // send RPC
     // target function
     {
-        int len = m.target.size();
-        send(sockfd, &len, sizeof(int), MSG_WAITALL);
+        size_t len = m.target.size();
+        send(sockfd, &len, sizeof(size_t), MSG_WAITALL);
         send(sockfd, m.target.c_str(), len, MSG_WAITALL);
     }
     // request args
