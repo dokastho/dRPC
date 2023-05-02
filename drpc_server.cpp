@@ -7,14 +7,33 @@
 #include <thread>
 #include <stdlib.h>
 #include <iostream>
+#include <unistd.h>
 
-drpc_server::drpc_server(drpc_host &host_args, void* srv_ptr_arg) : my_host(host_args) {
+drpc_server::drpc_server(drpc_host &host_args, void *srv_ptr_arg) : my_host(host_args)
+{
     srv_ptr = srv_ptr_arg;
+    alive = true;
 }
 
 void drpc_server::publish_endpoint(std::string func_name, void *func_ptr)
 {
     endpoints[func_name] = func_ptr;
+}
+
+bool drpc_server::is_alive()
+{
+    bool b;
+    kill_lock.lock();
+    b = alive;
+    kill_lock.unlock();
+    return b;
+}
+
+void drpc_server::kill()
+{
+    kill_lock.lock();
+    alive = false;
+    kill_lock.unlock();
 }
 
 int drpc_server::run_server()
@@ -48,10 +67,27 @@ int drpc_server::run_server()
     }
     listen(sockfd, SOCK_BUF_SIZE);
 
-    while (true)
+    while (is_alive())
     {
-        int connectionfd = accept(sockfd, 0, 0);
-        parse_rpc(connectionfd);
+        fd_set readfds;
+        FD_ZERO(&readfds);
+        FD_SET(sockfd, &readfds);
+        struct timeval tv = {0, 100000}; // sleep for 100 ms
+
+        if (select(sockfd + 1, &readfds, NULL, NULL, &tv) < 0)
+        {
+            // error or timeout
+            // noop
+        }
+        if (FD_ISSET(sockfd, &readfds))
+        {
+            int connectionfd = accept(sockfd, 0, 0);
+            parse_rpc(connectionfd);
+        }
+        else
+        {
+            // the socket timedout
+        }
     }
 
     return 0;
@@ -79,13 +115,13 @@ void drpc_server::parse_rpc(int sockfd)
     // request args
     {
         recv(sockfd, &m.req->len, sizeof(size_t), MSG_WAITALL);
-        m.req->args = (void*)malloc(m.req->len);
+        m.req->args = (void *)malloc(m.req->len);
         recv(sockfd, m.req->args, m.req->len, MSG_WAITALL);
     }
     // reply
     {
         recv(sockfd, &m.rep->len, sizeof(size_t), MSG_WAITALL);
-        m.rep->args = (void*)malloc(m.rep->len);
+        m.rep->args = (void *)malloc(m.rep->len);
         recv(sockfd, m.rep->args, m.rep->len, MSG_WAITALL);
     }
     // checksum

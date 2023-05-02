@@ -32,7 +32,8 @@ private:
     std::map<std::string, void *> endpoints;
     drpc_host my_host;
     void *srv_ptr;
-    std::mutex sock_lock;
+    std::mutex sock_lock, kill_lock;
+    bool alive;
 
     void parse_rpc(int);
 
@@ -44,6 +45,10 @@ public:
     void publish_endpoint(std::string, void *);
 
     int run_server();
+
+    bool is_alive();
+
+    void kill();
 };
 
 class drpc_client

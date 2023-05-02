@@ -51,6 +51,7 @@ Module.symvers
 Mkfile.old
 dkms.conf
 test_server
+test_kill
 test_basic
 test_many
 test_concurrent

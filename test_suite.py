@@ -1,8 +1,10 @@
 import os
 
+
 def run_command(cmd: str):
     x = os.system(cmd)
     return (x & 0xff00) >> 8
+
 
 def test_basic():
     cmd = './test_basic'
@@ -21,7 +23,14 @@ def test_concurrent():
     assert(run_command(cmd) == 0)
     pass
 
+
 def test_unreliable():
     cmd = './test_unreliable'
+    assert(run_command(cmd) == 0)
+    pass
+
+
+def test_kill():
+    cmd = './test_kill'
     assert(run_command(cmd) == 0)
     pass
