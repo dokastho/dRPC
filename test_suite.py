@@ -20,3 +20,8 @@ def test_concurrent():
     cmd = './test_concurrent'
     assert(run_command(cmd) == 0)
     pass
+
+def test_unreliable():
+    cmd = './test_unreliable'
+    assert(run_command(cmd) == 0)
+    pass

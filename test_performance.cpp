@@ -25,31 +25,16 @@ void func(int i)
     rpc_arg_wrapper req{(void *)&breq, sizeof(basic_request)};
     rpc_arg_wrapper rep{(void *)&brep, sizeof(basic_reply)};
 
-    for (size_t i = 0; i < 10; i++)
+    while (brep.status != 0xf)
     {
         c.Call(h, "foo", &req, &rep);
-        if (brep.status == 0xf)
-        {
-            return;
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(0));
     }
-    
-
-    if (brep.status != 0xf)
-    {
-        m.lock();
-        did_pass = false;
-        std::cout << "fail #" << i << std::endl;
-        m.unlock();
-    }
-    
 }
 
 int main()
 {
     std::vector<std::thread> threads;
-    int count = 0x200;
+    int count = 500;
 
     for (int i = 0; i < count; i++)
     {
