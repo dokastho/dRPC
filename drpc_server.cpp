@@ -10,7 +10,6 @@
 
 drpc_server::drpc_server(drpc_host &host_args, void* srv_ptr_arg) : my_host(host_args) {
     srv_ptr = srv_ptr_arg;
-    logger = new Logger("output.out");
 }
 
 void drpc_server::publish_endpoint(std::string func_name, void *func_ptr)

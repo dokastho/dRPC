@@ -4,10 +4,21 @@
 #include <map>
 #include <string>
 #include <mutex>
-#include "drpc_msg.h"
-#include "Logger.h"
 
 #define SOCK_BUF_SIZE 100
+
+struct rpc_arg_wrapper
+{
+    void *args;
+    size_t len;
+};
+
+struct drpc_msg
+{
+    std::string target;
+    rpc_arg_wrapper *req;
+    rpc_arg_wrapper *rep;
+};
 
 struct drpc_host
 {
@@ -22,14 +33,13 @@ private:
     drpc_host my_host;
     void *srv_ptr;
     std::mutex sock_lock;
-    Logger * logger;
 
     void parse_rpc(int);
 
     void stub(drpc_msg, int);
 
 public:
-    drpc_server(drpc_host &, void *srv_ptr_arg);
+    drpc_server(drpc_host &, void *);
 
     void publish_endpoint(std::string, void *);
 

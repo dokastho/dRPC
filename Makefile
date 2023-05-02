@@ -9,6 +9,8 @@ SOURCES     := $(filter-out $(TESTSOURCES), $(SOURCES))
 # list of objects used in project
 OBJECTS		= $(SOURCES:%.cpp=%.o)
 
+SO_PATH = $(LD_LIBRARY_PATH)
+
 LIB = drpc.so
 
 #Default Flags
@@ -22,25 +24,28 @@ debug: clean all
 # highest target; sews together all objects into executable
 all: $(LIB) test_server test_basic test_many test_concurrent test_unreliable test_performance
 
+final: clean all
+	ln -f $(LIB) $(SO_PATH)
+
 $(LIB): $(OBJECTS)
 	$(CXX)  $(CXXFLAGS) $(OBJECTS)  -o  $(LIB)  -shared
 
 clean:
 	rm -f $(OBJECTS) $(EXECUTABLE) $(TESTS) $(PARTIAL_SUBMITFILE) $(FULL_SUBMITFILE)
 
-# test1: test1.cpp drpc.so
+# test1: test1.cpp $(LIB)
 # 	$(CXX) $(CXXFLAGS) -o $@ $^
-test_server: test_server.cpp drpc.so
+test_server: test_server.cpp $(LIB)
 	$(CXX) $(CXXFLAGS) -o $@ $^
-test_basic: test_basic.cpp drpc.so
+test_basic: test_basic.cpp $(LIB)
 	$(CXX) $(CXXFLAGS) -o $@ $^
-test_many: test_many.cpp drpc.so
+test_many: test_many.cpp $(LIB)
 	$(CXX) $(CXXFLAGS) -o $@ $^
-test_concurrent: test_concurrent.cpp drpc.so
+test_concurrent: test_concurrent.cpp $(LIB)
 	$(CXX) $(CXXFLAGS) -o $@ $^
-test_unreliable: test_unreliable.cpp drpc.so
+test_unreliable: test_unreliable.cpp $(LIB)
 	$(CXX) $(CXXFLAGS) -o $@ $^
-test_performance: test_performance.cpp drpc.so
+test_performance: test_performance.cpp $(LIB)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 # rule for creating objects
