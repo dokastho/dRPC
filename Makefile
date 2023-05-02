@@ -20,7 +20,7 @@ debug: CXXFLAGS += -g3 -DDEBUG
 debug: clean all
 
 # highest target; sews together all objects into executable
-all: $(LIB) test_server test_basic test_many test_concurrent
+all: $(LIB) test_server test_basic test_many test_concurrent test_unreliable
 
 $(LIB): $(OBJECTS)
 	$(CXX)  $(CXXFLAGS) $(OBJECTS)  -o  $(LIB)  -shared
@@ -37,6 +37,8 @@ test_basic: test_basic.cpp drpc.so
 test_many: test_many.cpp drpc.so
 	$(CXX) $(CXXFLAGS) -o $@ $^
 test_concurrent: test_concurrent.cpp drpc.so
+	$(CXX) $(CXXFLAGS) -o $@ $^
+test_unreliable: test_unreliable.cpp drpc.so
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 # rule for creating objects

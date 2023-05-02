@@ -47,7 +47,7 @@ int drpc_server::run_server()
         perror("port");
         return -1;
     }
-    listen(sockfd, 100);
+    listen(sockfd, SOCK_BUF_SIZE);
 
     while (true)
     {
@@ -94,7 +94,6 @@ void drpc_server::parse_rpc(int sockfd)
         // todo
     }
 
-    // std::cout << m.req << '\t' << m.req->args << std::endl;
     sock_lock.unlock();
 
     // call function

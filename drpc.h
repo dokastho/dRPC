@@ -7,6 +7,8 @@
 #include "drpc_msg.h"
 #include "Logger.h"
 
+#define SOCK_BUF_SIZE 100
+
 struct drpc_host
 {
     std::string hostname;
