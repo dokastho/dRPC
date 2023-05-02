@@ -5,12 +5,11 @@
 #include <string>
 #include <vector>
 #include <thread>
-#include <mutex>
 #include <chrono>
+#include <iomanip>
 #include <string.h>
 
-std::mutex m;
-bool did_pass = true;
+using std::chrono::milliseconds;
 
 void func(int i)
 {
@@ -33,21 +32,37 @@ void func(int i)
 
 int main()
 {
-    std::vector<std::thread> threads;
-    int count = 500;
+    int R = 10;
+    int N = 500;
 
-    for (int i = 0; i < count; i++)
+    auto start = std::chrono::high_resolution_clock::now();
+
+    for (int i = 0; i < R; i++)
     {
-        std::thread t(&func, i);
-        threads.push_back(std::move(t));
+        std::vector<std::thread> threads;
+        for (int i = 0; i < N; i++)
+        {
+            std::thread t(&func, i);
+            threads.push_back(std::move(t));
+        }
+
+        for (int i = 0; i < N; i++)
+        {
+            threads[i].join();
+        }
     }
 
-    for (int i = 0; i < count; i++)
-    {
-        threads[i].join();
-    }
+    auto end = std::chrono::high_resolution_clock::now();
 
-    assert(did_pass);
+    milliseconds duration = std::chrono::duration_cast<milliseconds>(end - start);
 
+    long T = duration.count();
+
+    std::cout << std::fixed;
+    std::cout << std::setprecision(1);
+    std::cout << "dispatched " << R << " x " << N << " rpcs in " << T << "ms" << std::endl;
+    std::cout << "rate:\t" << 1000 * (double)R * (double)N / (double)T << " rpcs/s" << std::endl;
+    std::cout << "each rpc request is " << sizeof(basic_request) << "B" << std::endl;
+    std::cout << "each rpc reply is " << sizeof(basic_reply) << "B" << std::endl;
     return 0;
 }
