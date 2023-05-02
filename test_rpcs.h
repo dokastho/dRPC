@@ -7,6 +7,7 @@ struct basic_request {
 };
 
 struct basic_reply {
+    int host;
     int status;    
 };
 

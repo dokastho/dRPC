@@ -122,5 +122,4 @@ void drpc_server::stub(drpc_msg m, int sockfd)
     free(m.rep->args);
     delete m.req;
     delete m.rep;
-    // delete &m;
 }

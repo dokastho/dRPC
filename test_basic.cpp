@@ -9,7 +9,7 @@ int main()
     drpc_client c;
 
     basic_request breq{"basic test client", 0};
-    basic_reply brep{0};
+    basic_reply brep{0, 0};
     rpc_arg_wrapper req{(void*)&breq, sizeof(basic_request)};
     rpc_arg_wrapper rep{(void*)&brep, sizeof(basic_reply)};
 
