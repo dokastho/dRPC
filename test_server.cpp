@@ -12,12 +12,11 @@ class Test
 private:
     drpc_server *s;
     std::string id;
-    std::map<uint32_t, int> seeds;
 
 public:
     Test()
     {
-        drpc_host d{"localhost", 8020};
+        drpc_host d{"localhost", 8021};
         s = new drpc_server(d, (void *)this);
         id = "Tester";
 
@@ -30,16 +29,6 @@ public:
     {
         l.lock();
         basic_request *breq = (basic_request *)m.req->args;
-        if (t->seeds.find(breq->seed) != t->seeds.end())
-        {
-            // setup reply
-            basic_reply *brep = (basic_reply *)m.rep->args;
-            brep->status = t->seeds[breq->seed];
-            m.rep->len = sizeof(basic_reply);
-            l.unlock();
-            return;
-        }
-
         std::cout << t->id << " Received a message from " << breq->name << std::endl;
 
         // setup reply
@@ -48,7 +37,6 @@ public:
         brep->status = status;
         m.rep->len = sizeof(basic_reply);
 
-        t->seeds[breq->seed] = status;
         l.unlock();
         return;
     }

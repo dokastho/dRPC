@@ -5,6 +5,7 @@
 #include <string>
 #include <mutex>
 #include "drpc_msg.h"
+#include "Logger.h"
 
 struct drpc_host
 {
@@ -19,6 +20,7 @@ private:
     drpc_host my_host;
     void *srv_ptr;
     std::mutex sock_lock;
+    Logger * logger;
 
     void parse_rpc(int);
 

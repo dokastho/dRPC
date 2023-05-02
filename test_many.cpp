@@ -2,11 +2,12 @@
 #include "test_rpcs.h"
 #include <cassert>
 #include <string>
+#include <string.h>
 
 
 int main()
 {
-    drpc_host h{"localhost", 8020};
+    drpc_host h{"localhost", 8021};
     drpc_client c;
 
     int count = 100;

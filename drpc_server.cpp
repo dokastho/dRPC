@@ -6,9 +6,11 @@
 #include <string.h>
 #include <thread>
 #include <stdlib.h>
+#include <iostream>
 
 drpc_server::drpc_server(drpc_host &host_args, void* srv_ptr_arg) : my_host(host_args) {
     srv_ptr = srv_ptr_arg;
+    logger = new Logger("output.out");
 }
 
 void drpc_server::publish_endpoint(std::string func_name, void *func_ptr)
@@ -58,8 +60,11 @@ int drpc_server::run_server()
 
 void drpc_server::parse_rpc(int sockfd)
 {
-    rpc_arg_wrapper req, rep;
-    drpc_msg m{"", &req, &rep};
+    rpc_arg_wrapper *req = new rpc_arg_wrapper;
+    rpc_arg_wrapper *rep = new rpc_arg_wrapper;
+    drpc_msg m;
+    m.req = req;
+    m.rep = rep;
 
     // recv RPC
     // target function
@@ -69,7 +74,8 @@ void drpc_server::parse_rpc(int sockfd)
         recv(sockfd, &len, sizeof(size_t), MSG_WAITALL);
         char *buf = (char *)malloc(len);
         recv(sockfd, buf, len, MSG_WAITALL);
-        m.target = buf;
+        m.target = std::string(buf, len);
+        free(buf);
     }
     // request args
     {
@@ -87,6 +93,8 @@ void drpc_server::parse_rpc(int sockfd)
     {
         // todo
     }
+
+    // std::cout << m.req << '\t' << m.req->args << std::endl;
     sock_lock.unlock();
 
     // call function
@@ -111,4 +119,9 @@ void drpc_server::stub(drpc_msg m, int sockfd)
         send(sockfd, m.rep->args, m.rep->len, MSG_WAITALL);
         sock_lock.unlock();
     }
+    free(m.req->args);
+    free(m.rep->args);
+    delete m.req;
+    delete m.rep;
+    // delete &m;
 }

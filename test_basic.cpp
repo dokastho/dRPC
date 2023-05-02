@@ -5,7 +5,7 @@
 
 int main()
 {
-    drpc_host h{"localhost", 8020};
+    drpc_host h{"localhost", 8021};
     drpc_client c;
 
     basic_request breq{"basic test client", 0};

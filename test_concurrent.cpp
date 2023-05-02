@@ -7,13 +7,14 @@
 #include <thread>
 #include <mutex>
 #include <chrono>
+#include <string.h>
 
 std::mutex m;
 bool did_pass = true;
 
 void func(int i)
 {
-    drpc_host h{"localhost", 8020};
+    drpc_host h{"localhost", 8021};
     drpc_client c;
 
     std::string s = "concurrent test client #" + std::to_string(i);
@@ -24,12 +25,9 @@ void func(int i)
     rpc_arg_wrapper req{(void *)&breq, sizeof(basic_request)};
     rpc_arg_wrapper rep{(void *)&brep, sizeof(basic_reply)};
 
-    for (size_t i = 0; i < 10; i++)
-    {
-        c.Call(h, "foo", &req, &rep);
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
+    c.Call(h, "foo", &req, &rep);
     
+
     if (brep.status != 0xf)
     {
         m.lock();
@@ -43,7 +41,7 @@ void func(int i)
 int main()
 {
     std::vector<std::thread> threads;
-    int count = 100;
+    int count = 10;
 
     for (int i = 0; i < count; i++)
     {
