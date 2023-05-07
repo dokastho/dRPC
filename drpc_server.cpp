@@ -138,7 +138,8 @@ void drpc_server::parse_rpc(int sockfd)
 
 void drpc_server::stub(drpc_msg m, int sockfd)
 {
-    static void (*target_func)(void *, drpc_msg &) = (void (*)(void *, drpc_msg &))endpoints[m.target];
+    static void (*target_func)(void *, drpc_msg &) = nullptr;
+    target_func = (void (*)(void *, drpc_msg &))endpoints[m.target];
     if (target_func == nullptr)
     {
         // ignore
@@ -155,6 +156,10 @@ void drpc_server::stub(drpc_msg m, int sockfd)
     }
     free(m.req->args);
     free(m.rep->args);
+    m.req->args = nullptr;
+    m.rep->args = nullptr;
     delete m.req;
     delete m.rep;
+    m.rep = nullptr;
+    m.req = nullptr;
 }
