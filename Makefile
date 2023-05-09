@@ -22,7 +22,7 @@ debug: CXXFLAGS += -g3 -DDEBUG
 debug: clean all
 
 # highest target; sews together all objects into executable
-all: $(LIB) test_server test_kill test_basic test_many test_concurrent test_unreliable test_performance
+all: $(LIB) test_server test_kill test_basic test_many test_concurrent test_unreliable test_performance test_deaf
 
 final: clean all
 	ln -f $(LIB) $(SO_PATH)
@@ -48,6 +48,8 @@ test_concurrent: test_concurrent.cpp $(LIB)
 test_unreliable: test_unreliable.cpp $(LIB)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 test_performance: test_performance.cpp $(LIB)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+test_deaf: test_deaf.cpp $(LIB)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 # rule for creating objects

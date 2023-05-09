@@ -6,6 +6,10 @@
 #include <string.h>
 #include <unistd.h> //close
 
+drpc_client::drpc_client() : timeout_val(DEFAULT_TIMEOUT) {}
+
+drpc_client::drpc_client(const int timeout) : timeout_val(timeout) {}
+
 void drpc_client::Call(drpc_host &srv, std::string funct, rpc_arg_wrapper *args, rpc_arg_wrapper *err)
 {
     drpc_msg m{funct, args, err};
@@ -62,8 +66,26 @@ int drpc_client::do_rpc(drpc_host &srv, drpc_msg &m)
     // receive RPC reply
     // reply
     {
-        recv(sockfd, &m.rep->len, sizeof(size_t), MSG_WAITALL);
-        recv(sockfd, m.rep->args, m.rep->len, MSG_WAITALL);
+        fd_set readfds;
+        FD_ZERO(&readfds);
+        FD_SET(sockfd, &readfds);
+        struct timeval tv = {0, timeout_val * 1000}; // sleep for TIMEOUT ms
+
+        if (select(sockfd + 1, &readfds, NULL, NULL, &tv) < 0)
+        {
+            // error or timeout
+            perror("client recv error");
+            // noop
+        }
+        if (FD_ISSET(sockfd, &readfds))
+        {
+            recv(sockfd, &m.rep->len, sizeof(size_t), MSG_WAITALL);
+            recv(sockfd, m.rep->args, m.rep->len, MSG_WAITALL);
+        }
+        else
+        {
+            // the socket timedout
+        }
     }
 
     close(sockfd);

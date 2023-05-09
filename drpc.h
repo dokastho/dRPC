@@ -6,6 +6,7 @@
 #include <mutex>
 
 #define SOCK_BUF_SIZE 100
+#define DEFAULT_TIMEOUT 3000  // in ms
 
 struct rpc_arg_wrapper
 {
@@ -54,9 +55,12 @@ public:
 class drpc_client
 {
 private:
+    int timeout_val;
     int do_rpc(drpc_host &, drpc_msg &);
 
 public:
+    drpc_client();
+    drpc_client(const int);
     void Call(drpc_host &, std::string, rpc_arg_wrapper *, rpc_arg_wrapper *);
 };
 
