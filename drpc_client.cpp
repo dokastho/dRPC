@@ -32,7 +32,7 @@ int drpc_client::do_rpc(drpc_host &srv, drpc_msg &m)
         return 1;
     }
     memcpy(&(addr.sin_addr), host->h_addr, host->h_length);
-    addr.sin_port = srv.port;
+    addr.sin_port = htons(srv.port);
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (connect(sockfd, (sockaddr *)&addr, sizeof(addr)) == -1)

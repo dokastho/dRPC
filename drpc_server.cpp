@@ -42,7 +42,8 @@ int drpc_server::run_server()
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = INADDR_ANY;
-    addr.sin_port = my_host.port;
+    addr.sin_port = htons(my_host.port);
+
     // start server
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd == -1)
