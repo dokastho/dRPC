@@ -1,4 +1,4 @@
-from drpc_client import *
+from pydrpc.drpc_client import *
 
 
 class basic_request:
