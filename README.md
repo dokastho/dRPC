@@ -21,7 +21,7 @@ The `drpc_server` class is stateful: after initialization a server must publish 
 
 There are two main limitations to the exiting implementation of dRPC.
 
-* it is required to make all RPC endpoints static methods. This is so that the pointer-to-function types can be invoked from the `drpc_server` object after they are published.
+* it is required to make all RPC endpoints static void methods that accept two arguments: a pointer-to-self and a drpc_msg reference. This is so that the pointer-to-function types can be invoked from the `drpc_server` object after they are published.
 * it is currently not possible to send RPC's containing data types with dynamic length, such as vectors or maps. All RPC classes are required to be defined with static-length data types only.
 
 ## P.S.
