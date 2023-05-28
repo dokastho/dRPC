@@ -1,7 +1,7 @@
-import sys
 import socket
+import time
 
-DEFAULT_TIMEOUT = 3000
+DEFAULT_TIMEOUT = 3.0
 
 
 class drpc_arg_wrapper:
@@ -38,9 +38,13 @@ class drpc_client:
         self.timeout_val = timeout_val
         pass
 
-    def Call(self, dh: drpc_host, m: drpc_msg):
+    def Call(self, dh: drpc_host, m: drpc_msg) -> str:
+        err = "err"
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect((dh.hostname, dh.port))
+            try:
+                sock.connect((dh.hostname, dh.port))
+            except:
+                return err
             # send RPC
             # target function
             target_str_len = len(m.target)
@@ -54,12 +58,17 @@ class drpc_client:
             sock.sendall(bytes(m.rep.args))
             # checksum
             # todo
-
-            sock.settimeout(self.timeout_val)
+            
+            deadline = time.time() + self.timeout_val
+            sock.settimeout(deadline - time.time())
             # receive RPC reply
             # reply
-            b_size = sock.recv(8, socket.MSG_WAITALL)
-            m.rep.size = int.from_bytes(b_size, "little")
-            m.rep.args.serialize(sock.recv(m.rep.size, socket.MSG_WAITALL))
+            try:
+                b_size = sock.recv(8, socket.MSG_WAITALL)
+                m.rep.size = int.from_bytes(b_size, "little")
+                m.rep.args.serialize(sock.recv(m.rep.size, socket.MSG_WAITALL))
+                err = "ok"
+            except:
+                pass
 
-        pass
+        return err

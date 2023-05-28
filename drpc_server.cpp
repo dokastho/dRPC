@@ -149,12 +149,18 @@ void drpc_server::stub(drpc_msg m, int sockfd)
     target_func(srv_ptr, m);
     // send RPC reply
     // reply
+    try
     {
         sock_lock.lock();
         send(sockfd, &m.rep->len, sizeof(size_t), MSG_WAITALL);
         send(sockfd, m.rep->args, m.rep->len, MSG_WAITALL);
         sock_lock.unlock();
     }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << std::endl;
+    }
+    
     free(m.req->args);
     free(m.rep->args);
     m.req->args = nullptr;

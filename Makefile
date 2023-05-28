@@ -27,7 +27,7 @@ py-package:
 # highest target; sews together all objects into executable
 all: $(LIB) py-package test_server test_kill test_basic test_many test_concurrent test_unreliable test_performance test_deaf
 
-final: clean all
+final: clean $(LIB)
 	ln -f $(LIB) $(SO_PATH)
 
 $(LIB): $(OBJECTS)
