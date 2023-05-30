@@ -10,14 +10,16 @@ drpc_client::drpc_client() : timeout_val(DEFAULT_TIMEOUT) {}
 
 drpc_client::drpc_client(const int timeout) : timeout_val(timeout) {}
 
-void drpc_client::Call(drpc_host &srv, std::string funct, rpc_arg_wrapper *args, rpc_arg_wrapper *err)
+int drpc_client::Call(drpc_host &srv, std::string funct, rpc_arg_wrapper *args, rpc_arg_wrapper *err)
 {
     drpc_msg m{funct, args, err};
     int status = do_rpc(srv, m);
     if (status != 0)
     {
         perror("unable to complete RPC");
+        return -1;
     }
+    return 0;
 }
 
 int drpc_client::do_rpc(drpc_host &srv, drpc_msg &m)
@@ -85,6 +87,7 @@ int drpc_client::do_rpc(drpc_host &srv, drpc_msg &m)
         else
         {
             // the socket timedout
+            // return 0
         }
     }
 

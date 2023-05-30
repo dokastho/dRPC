@@ -38,13 +38,12 @@ class drpc_client:
         self.timeout_val = timeout_val
         pass
 
-    def Call(self, dh: drpc_host, m: drpc_msg) -> str:
-        err = "err"
+    def Call(self, dh: drpc_host, m: drpc_msg) -> int:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             try:
                 sock.connect((dh.hostname, dh.port))
             except:
-                return err
+                return -1
             # send RPC
             # target function
             target_str_len = len(m.target)
@@ -67,8 +66,7 @@ class drpc_client:
                 b_size = sock.recv(8, socket.MSG_WAITALL)
                 m.rep.size = int.from_bytes(b_size, "little")
                 m.rep.args.serialize(sock.recv(m.rep.size, socket.MSG_WAITALL))
-                err = "ok"
             except:
                 pass
 
-        return err
+        return 0

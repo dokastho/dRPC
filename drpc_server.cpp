@@ -1,4 +1,5 @@
 #include "drpc.h"
+#include <exception>
 #include <string>
 #include <sys/socket.h>
 #include <netdb.h>      // gethostbyname(), struct hostent

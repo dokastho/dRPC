@@ -61,7 +61,7 @@ private:
 public:
     drpc_client();
     drpc_client(const int);
-    void Call(drpc_host &, std::string, rpc_arg_wrapper *, rpc_arg_wrapper *);
+    int Call(drpc_host &, std::string, rpc_arg_wrapper *, rpc_arg_wrapper *);
 };
 
 #endif

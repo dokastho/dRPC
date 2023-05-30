@@ -43,7 +43,12 @@ def main():
     dh.hostname = "localhost"
     dh.port = 8021
 
-    c.Call(dh, m)
+    while brep.status == 0:
+        err = c.Call(dh, m)
+        if err == -1:
+            break
+        pass
+    
     assert m.rep.args.status == 0xf
     print("passed!")
     pass
