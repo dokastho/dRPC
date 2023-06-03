@@ -6,7 +6,7 @@
 #include <mutex>
 
 #define SOCK_BUF_SIZE 100
-#define DEFAULT_TIMEOUT 3000  // in ms
+#define DEFAULT_TIMEOUT 500  // in ms
 
 struct rpc_arg_wrapper
 {

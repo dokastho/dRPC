@@ -95,6 +95,32 @@ int drpc_server::run_server()
     return 0;
 }
 
+void sends(int sockfd, void *buf, size_t len)
+{
+    size_t sent = 0;
+	do {
+		ssize_t n = send(sockfd, (uint8_t*)buf + sent, len - sent, 0);
+		if (n == -1) {
+			perror("Error sending on stream socket");
+			exit(1);
+		}
+		sent += n;
+	} while (sent < len);
+}
+
+void recvs(int sockfd, void *buf, size_t len)
+{
+    size_t recvd = 0;
+	do {
+		ssize_t n = recv(sockfd, (uint8_t*)buf + recvd, len - recvd, 0);
+		if (n == -1) {
+			perror("Error recving on stream socket");
+			exit(1);
+		}
+		recvd += n;
+	} while (recvd < len);
+}
+
 void drpc_server::parse_rpc(int sockfd)
 {
     rpc_arg_wrapper *req = new rpc_arg_wrapper;
@@ -108,23 +134,23 @@ void drpc_server::parse_rpc(int sockfd)
     sock_lock.lock();
     {
         size_t len;
-        recv(sockfd, &len, sizeof(size_t), MSG_WAITALL);
+        recvs(sockfd, &len, sizeof(size_t));
         char *buf = (char *)malloc(len);
-        recv(sockfd, buf, len, MSG_WAITALL);
+        recvs(sockfd, buf, len);
         m.target = std::string(buf, len);
         free(buf);
     }
     // request args
     {
-        recv(sockfd, &m.req->len, sizeof(size_t), MSG_WAITALL);
+        recvs(sockfd, &m.req->len, sizeof(size_t));
         m.req->args = (void *)malloc(m.req->len);
-        recv(sockfd, m.req->args, m.req->len, MSG_WAITALL);
+        recvs(sockfd, m.req->args, m.req->len);
     }
     // reply
     {
-        recv(sockfd, &m.rep->len, sizeof(size_t), MSG_WAITALL);
+        recvs(sockfd, &m.rep->len, sizeof(size_t));
         m.rep->args = (void *)malloc(m.rep->len);
-        recv(sockfd, m.rep->args, m.rep->len, MSG_WAITALL);
+        recvs(sockfd, m.rep->args, m.rep->len);
     }
     // checksum
     {
@@ -153,8 +179,8 @@ void drpc_server::stub(drpc_msg m, int sockfd)
     sock_lock.lock();
     try
     {
-        send(sockfd, &m.rep->len, sizeof(size_t), MSG_WAITALL);
-        send(sockfd, m.rep->args, m.rep->len, MSG_WAITALL);
+        sends(sockfd, &m.rep->len, sizeof(size_t));
+        sends(sockfd, m.rep->args, m.rep->len);
     }
     catch(const std::exception& e)
     {
