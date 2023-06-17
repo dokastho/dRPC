@@ -16,6 +16,11 @@ drpc_server::drpc_server(drpc_host &host_args, void *srv_ptr_arg) : my_host(host
     alive = true;
 }
 
+drpc_server::~drpc_server()
+{
+    this->kill();
+}
+
 void drpc_server::publish_endpoint(std::string func_name, void *func_ptr)
 {
     endpoints[func_name] = func_ptr;
@@ -92,6 +97,8 @@ int drpc_server::run_server()
         }
     }
 
+    // close socket to allow reuse
+    close(sockfd);
     return 0;
 }
 
@@ -177,15 +184,8 @@ void drpc_server::stub(drpc_msg m, int sockfd)
     // send RPC reply
     // reply
     sock_lock.lock();
-    try
-    {
-        sends(sockfd, &m.rep->len, sizeof(size_t));
-        sends(sockfd, m.rep->args, m.rep->len);
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
+    sends(sockfd, &m.rep->len, sizeof(size_t));
+    sends(sockfd, m.rep->args, m.rep->len);
     sock_lock.unlock();
     
     free(m.req->args);

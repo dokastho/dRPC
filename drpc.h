@@ -43,6 +43,8 @@ private:
 public:
     drpc_server(drpc_host &, void *);
 
+    ~drpc_server();
+
     void publish_endpoint(std::string, void *);
 
     int run_server();
