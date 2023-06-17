@@ -102,7 +102,7 @@ void sends(int sockfd, void *buf, size_t len)
 		ssize_t n = send(sockfd, (uint8_t*)buf + sent, len - sent, MSG_NOSIGNAL);
 		if (n == -1) {
 			perror("Error sending on stream socket");
-			exit(1);
+			return;
 		}
 		sent += n;
 	} while (sent < len);
