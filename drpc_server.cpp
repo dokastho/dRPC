@@ -99,7 +99,7 @@ void sends(int sockfd, void *buf, size_t len)
 {
     size_t sent = 0;
 	do {
-		ssize_t n = send(sockfd, (uint8_t*)buf + sent, len - sent, 0);
+		ssize_t n = send(sockfd, (uint8_t*)buf + sent, len - sent, MSG_NOSIGNAL);
 		if (n == -1) {
 			perror("Error sending on stream socket");
 			exit(1);
