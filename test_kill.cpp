@@ -8,16 +8,13 @@ class Killer
 {
 private:
     drpc_server *s;
-    std::thread s_t;
 
 public:
     Killer(drpc_host h)
     {
         s = new drpc_server(h, this);
         std::cout << "starting server" << std::endl;
-        std::thread t(&drpc_server::run_server, s);
-        // t.detach();
-        s_t = std::move(t);
+        s->start();
     }
 
     void kill()
@@ -32,9 +29,8 @@ public:
 
     ~Killer()
     {
-        s_t.join();
-        std::cout << "server is killed" << std::endl;
         delete s;
+        std::cout << "server is killed" << std::endl;
     }
 };
 

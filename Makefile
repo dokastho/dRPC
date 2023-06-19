@@ -25,7 +25,7 @@ py-package:
 	sudo python3 setup.py install
 
 # highest target; sews together all objects into executable
-all: $(LIB) py-package test_server test_kill test_basic test_many test_concurrent test_unreliable test_performance test_deaf
+all: $(LIB) test_server test_kill test_basic test_many test_concurrent test_unreliable test_performance test_deaf
 
 final: clean $(LIB)
 	ln -f $(LIB) $(SO_PATH)
@@ -34,7 +34,7 @@ $(LIB): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $(LIB) -shared
 
 clean:
-	sudo rm -rf $(OBJECTS) $(EXECUTABLE) $(TESTS) $(PARTIAL_SUBMITFILE) $(FULL_SUBMITFILE) build dist
+	rm -rf $(OBJECTS) $(EXECUTABLE) $(TESTS) $(PARTIAL_SUBMITFILE) $(FULL_SUBMITFILE)
 
 # test1: test1.cpp $(LIB)
 # 	$(CXX) $(CXXFLAGS) -o $@ $^

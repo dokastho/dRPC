@@ -19,6 +19,14 @@ drpc_server::drpc_server(drpc_host &host_args, void *srv_ptr_arg) : my_host(host
 drpc_server::~drpc_server()
 {
     this->kill();
+    // join if running thread not null
+    // is null if server wasn't started
+    if (running)
+    {
+        running->join();
+        delete running;
+    }
+    
 }
 
 void drpc_server::publish_endpoint(std::string func_name, void *func_ptr)
@@ -40,6 +48,12 @@ void drpc_server::kill()
     kill_lock.lock();
     alive = false;
     kill_lock.unlock();
+}
+
+void drpc_server::start()
+{
+    // make it run on another thread, and join in dtor to prevent invalid reads
+    running = new std::thread(&drpc_server::run_server, this);
 }
 
 int drpc_server::run_server()

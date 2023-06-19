@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <mutex>
+#include <thread>
 
 #define SOCK_BUF_SIZE 100
 #define DEFAULT_TIMEOUT 500  // in ms
@@ -33,12 +34,15 @@ private:
     std::map<std::string, void *> endpoints;
     drpc_host my_host;
     void *srv_ptr;
+    std::thread *running;
     std::mutex sock_lock, kill_lock;
     bool alive;
 
     void parse_rpc(int);
 
     void stub(drpc_msg, int);
+
+    int run_server();
 
 public:
     drpc_server(drpc_host &, void *);
@@ -47,7 +51,7 @@ public:
 
     void publish_endpoint(std::string, void *);
 
-    int run_server();
+    void start();
 
     bool is_alive();
 

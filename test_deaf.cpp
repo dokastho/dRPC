@@ -1,6 +1,5 @@
 #include "drpc.h"
 #include "test_rpcs.h"
-#include <thread>
 #include <iostream>
 #include <cassert>
 
@@ -11,16 +10,13 @@ class Deaf
 {
 private:
     drpc_server *s;
-    std::thread s_t;
 
 public:
     Deaf(drpc_host h)
     {
         s = new drpc_server(h, this);
         s->publish_endpoint("Kill", (void *)Deaf::Deafen);
-        std::thread t(&drpc_server::run_server, s);
-        // t.detach();
-        s_t = std::move(t);
+        s->start();
     }
 
     static void Deafen(Deaf *d, drpc_msg &m)
@@ -49,8 +45,6 @@ public:
 
     ~Deaf()
     {
-        s->kill();
-        s_t.join();
         delete s;
     }
 };

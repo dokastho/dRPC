@@ -22,7 +22,7 @@ public:
 
         s->publish_endpoint("foo", (void *)this->foo);
         std::cout << "starting server" << std::endl;
-        s->run_server();
+        s->start();
     }
 
     static void foo(Test *t, drpc_msg &m)
@@ -51,5 +51,11 @@ public:
 int main()
 {
     Test t;
+    std::string cmd = "";
+    do
+    {
+        std::cout << "enter 'q' to quit\n$ ";
+        std::cin >> cmd;
+    } while (cmd[0] != 'q');
     return 0;
 }
