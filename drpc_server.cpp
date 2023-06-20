@@ -1,4 +1,3 @@
-#include "drpc.h"
 #include <exception>
 #include <string>
 #include <sys/socket.h>
@@ -9,6 +8,9 @@
 #include <stdlib.h>
 #include <iostream>
 #include <unistd.h>
+
+#include "drpc.h"
+#include "Channel.h"
 
 drpc_server::drpc_server(drpc_host &host_args, void *srv_ptr_arg) : my_host(host_args)
 {
@@ -26,7 +28,10 @@ drpc_server::~drpc_server()
         running->join();
         delete running;
     }
-    
+    for (auto it = threads.begin(); it != threads.end(); it++)
+    {
+        it->second.join();
+    }
 }
 
 void drpc_server::publish_endpoint(std::string func_name, void *func_ptr)
@@ -119,27 +124,31 @@ int drpc_server::run_server()
 void sends(int sockfd, void *buf, size_t len)
 {
     size_t sent = 0;
-	do {
-		ssize_t n = send(sockfd, (uint8_t*)buf + sent, len - sent, MSG_NOSIGNAL);
-		if (n == -1) {
-			perror("Error sending on stream socket");
-			return;
-		}
-		sent += n;
-	} while (sent < len);
+    do
+    {
+        ssize_t n = send(sockfd, (uint8_t *)buf + sent, len - sent, MSG_NOSIGNAL);
+        if (n == -1)
+        {
+            perror("Error sending on stream socket");
+            return;
+        }
+        sent += n;
+    } while (sent < len);
 }
 
 void recvs(int sockfd, void *buf, size_t len)
 {
     size_t recvd = 0;
-	do {
-		ssize_t n = recv(sockfd, (uint8_t*)buf + recvd, len - recvd, 0);
-		if (n == -1) {
-			perror("Error recving on stream socket");
-			exit(1);
-		}
-		recvd += n;
-	} while (recvd < len);
+    do
+    {
+        ssize_t n = recv(sockfd, (uint8_t *)buf + recvd, len - recvd, 0);
+        if (n == -1)
+        {
+            perror("Error recving on stream socket");
+            exit(1);
+        }
+        recvd += n;
+    } while (recvd < len);
 }
 
 void drpc_server::parse_rpc(int sockfd)
@@ -180,28 +189,37 @@ void drpc_server::parse_rpc(int sockfd)
 
     sock_lock.unlock();
 
-    // call function
-    std::thread t(&drpc_server::stub, this, m, sockfd);
-    t.detach();
+    // if all threads are busy, then wait for one to complete
+    while (threads.size() >= SOCK_BUF_SIZE)
+    {
+        // join thread if one is finished or wait if not
+        int complete_thread_id = finished_threads.get();
+        threads[complete_thread_id].join();
+        threads.erase(complete_thread_id);
+    }
+
+
+    // call function and save random thread id
+    int t_id = rand();
+    std::thread t(&drpc_server::stub, this, m, sockfd, t_id);
+    threads[t_id] = std::move(t);
 }
 
-void drpc_server::stub(drpc_msg m, int sockfd)
+void drpc_server::stub(drpc_msg m, int sockfd, int my_id)
 {
     static void (*target_func)(void *, drpc_msg &) = nullptr;
     target_func = (void (*)(void *, drpc_msg &))endpoints[m.target];
-    if (target_func == nullptr)
+    if (target_func != nullptr)
     {
-        // ignore
-        return;
+        target_func(srv_ptr, m);
+        // send RPC reply
+        // reply
+        sock_lock.lock();
+        sends(sockfd, &m.rep->len, sizeof(size_t));
+        sends(sockfd, m.rep->args, m.rep->len);
+        sock_lock.unlock();
     }
-    target_func(srv_ptr, m);
-    // send RPC reply
-    // reply
-    sock_lock.lock();
-    sends(sockfd, &m.rep->len, sizeof(size_t));
-    sends(sockfd, m.rep->args, m.rep->len);
-    sock_lock.unlock();
-    
+
     free(m.req->args);
     free(m.rep->args);
     m.req->args = nullptr;
@@ -210,4 +228,7 @@ void drpc_server::stub(drpc_msg m, int sockfd)
     delete m.rep;
     m.rep = nullptr;
     m.req = nullptr;
+
+    // announce thread is about to be complete
+    finished_threads.add(my_id);
 }

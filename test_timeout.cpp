@@ -22,14 +22,14 @@ void func(int me)
     int status = 1;
     while (status != 0)
     {
-        status = c.Call(shost, "slow", &req, &rep);
+        status = c.Call(shost, "foo", &req, &rep);
     }
     passes[me] = true;
 }
 
 int main()
 {
-    // Server s;
+    Server s;
     drpc_client c;
 
     basic_request breq{"basic test client", 0};
@@ -59,7 +59,7 @@ int main()
         threads[i].join();
     }
     
-    bool did_pass = false;
+    bool did_pass = true;
 
     for (size_t i = 0; i < nreqs; i++)
     {

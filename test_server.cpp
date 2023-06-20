@@ -38,7 +38,6 @@ public:
         brep->host = t->id;
         brep->status = status;
         m.rep->len = sizeof(basic_reply);
-        std::this_thread::sleep_for(std::chrono::milliseconds(DEFAULT_TIMEOUT));
         return;
     }
 

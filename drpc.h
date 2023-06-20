@@ -6,7 +6,9 @@
 #include <mutex>
 #include <thread>
 
-#define SOCK_BUF_SIZE 100
+#include "Channel.h"
+
+#define SOCK_BUF_SIZE 50
 #define DEFAULT_TIMEOUT 500  // in ms
 
 struct rpc_arg_wrapper
@@ -36,11 +38,13 @@ private:
     void *srv_ptr;
     std::thread *running;
     std::mutex sock_lock, kill_lock;
+    std::map<int, std::thread> threads;
+    Channel<int> finished_threads;
     bool alive;
 
     void parse_rpc(int);
 
-    void stub(drpc_msg, int);
+    void stub(drpc_msg, int, int);
 
     int run_server();
 
