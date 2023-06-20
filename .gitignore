@@ -64,3 +64,5 @@ test_deaf
 *.egg-info
 build/*
 dist/*
+
+Channel.h

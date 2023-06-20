@@ -1,52 +1,35 @@
 #include <iostream>
+#include <vector>
 #include <thread>
 #include <chrono>
 #include <cassert>
 
 #include "drpc.h"
 #include "test_rpcs.h"
+#include "test_helpers.h"
 
-drpc_host shost{"localhost", 8021};
+#define nreqs 500
+std::vector<bool> passes;
 
-
-class Server
+void func(int me)
 {
-private:
-    drpc_server *s;
-    int id;
+    drpc_client c;
+    basic_request breq{"basic test client", 0};
+    basic_reply brep{0, 0};
+    rpc_arg_wrapper req{(void*)&breq, sizeof(basic_request)};
+    rpc_arg_wrapper rep{(void*)&brep, sizeof(basic_reply)};
 
-public:
-    Server()
+    int status = 1;
+    while (status != 0)
     {
-        s = new drpc_server(shost, (void *)this);
-        id = 1;
-
-        s->publish_endpoint("foo", (void *)this->foo);
-        std::cout << "starting server" << std::endl;
-        s->start();
+        status = c.Call(shost, "slow", &req, &rep);
     }
-
-    static void foo(Server *t, drpc_msg &m)
-    {
-        basic_request *breq = (basic_request *)m.req->args;
-        basic_reply *brep = (basic_reply *)m.rep->args;
-        std::cout << t->id << " Received a message from " << breq->name << std::endl;
-        // timeout for 1s
-        std::this_thread::sleep_for(std::chrono::milliseconds(2 * DEFAULT_TIMEOUT));
-        brep->status = 0xf;
-        return;
-    }
-
-    ~Server()
-    {
-        delete s;
-    }
-};
-
+    passes[me] = true;
+}
 
 int main()
 {
-    Server s;
+    // Server s;
     drpc_client c;
 
     basic_request breq{"basic test client", 0};
@@ -54,11 +37,36 @@ int main()
     rpc_arg_wrapper req{(void*)&breq, sizeof(basic_request)};
     rpc_arg_wrapper rep{(void*)&brep, sizeof(basic_reply)};
 
-    c.Call(shost, "foo", &req, &rep);
+    std::cout << "Test: one request that times out" << std::endl;
+    c.Call(shost, "slow", &req, &rep);
 
     // timeout for 2s 
     std::this_thread::sleep_for(std::chrono::milliseconds(4 * DEFAULT_TIMEOUT));
     assert(brep.status == 0);
+    std::cout << "passed" << std::endl;
+    std::cout << "Test: many requests that time out" << std::endl;
+
+    std::vector<std::thread> threads;
+
+    for (size_t i = 0; i < nreqs; i++)
+    {
+        std::thread t(&func, i);
+        threads.push_back(std::move(t));
+        passes.push_back(false);
+    }
+    for (size_t i = 0; i < nreqs; i++)
+    {
+        threads[i].join();
+    }
+    
+    bool did_pass = false;
+
+    for (size_t i = 0; i < nreqs; i++)
+    {
+        did_pass = did_pass && passes[i];
+    }
+    assert(did_pass);
+
     std::cout << "passed" << std::endl;
     return 0;
 }

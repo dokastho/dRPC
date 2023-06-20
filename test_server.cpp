@@ -5,7 +5,7 @@
 #include <mutex>
 #include <string>
 
-// std::mutex l;
+std::mutex l;
 
 class Test
 {
@@ -27,9 +27,10 @@ public:
 
     static void foo(Test *t, drpc_msg &m)
     {
-        // l.lock();
-        // basic_request *breq = (basic_request *)m.req->args;
-        // std::cout << t->id << " Received a message from " << breq->name << std::endl;
+        basic_request *breq = (basic_request *)m.req->args;
+        l.lock();
+        std::cout << t->id << " Received a message from " << breq->name << std::endl;
+        l.unlock();
 
         // setup reply
         int status = 0xf;
@@ -37,8 +38,7 @@ public:
         brep->host = t->id;
         brep->status = status;
         m.rep->len = sizeof(basic_reply);
-
-        // l.unlock();
+        std::this_thread::sleep_for(std::chrono::milliseconds(DEFAULT_TIMEOUT));
         return;
     }
 

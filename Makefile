@@ -36,6 +36,9 @@ $(LIB): $(OBJECTS)
 clean:
 	rm -rf $(OBJECTS) $(EXECUTABLE) $(TESTS) $(PARTIAL_SUBMITFILE) $(FULL_SUBMITFILE)
 
+headers:
+	cp ../channel/Channel.h .
+
 # test1: test1.cpp $(LIB)
 # 	$(CXX) $(CXXFLAGS) -o $@ $^
 test_server: test_server.cpp $(LIB)
