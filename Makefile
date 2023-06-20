@@ -21,11 +21,11 @@ CXXFLAGS = -std=c++14 -Wconversion -Wall -Werror -Wextra -pedantic -pthread
 debug: CXXFLAGS += -g3 -DDEBUG
 debug: clean all
 
-py-package:
-	sudo python3 setup.py install
+pydrpc:
+	sudo rm -rf build dist && sudo python3 setup.py install
 
 # highest target; sews together all objects into executable
-all: $(LIB) test_server test_kill test_basic test_many test_concurrent test_unreliable test_performance test_deaf
+all: $(LIB) test_timeout# test_server test_kill test_basic test_many test_concurrent test_unreliable test_performance test_deaf
 
 final: clean $(LIB)
 	ln -f $(LIB) $(SO_PATH)
@@ -53,6 +53,8 @@ test_unreliable: test_unreliable.cpp $(LIB)
 test_performance: test_performance.cpp $(LIB)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 test_deaf: test_deaf.cpp $(LIB)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+test_timeout: test_timeout.cpp $(LIB)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 # rule for creating objects

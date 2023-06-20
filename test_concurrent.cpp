@@ -41,7 +41,7 @@ void func(int i)
 int main()
 {
     std::vector<std::thread> threads;
-    int count = 50;
+    int count = 500;
 
     for (int i = 0; i < count; i++)
     {

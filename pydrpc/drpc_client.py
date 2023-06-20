@@ -1,7 +1,7 @@
 import socket
 import time
 
-DEFAULT_TIMEOUT = 0.5
+DEFAULT_TIMEOUT = 60
 
 
 class drpc_arg_wrapper:
