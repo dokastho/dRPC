@@ -27,11 +27,13 @@ drpc_server::~drpc_server()
     {
         running->join();
         delete running;
+        running = nullptr;
     }
     for (auto it = threads.begin(); it != threads.end(); it++)
     {
         it->second.join();
     }
+    threads.clear();
 }
 
 void drpc_server::publish_endpoint(std::string func_name, void *func_ptr)
