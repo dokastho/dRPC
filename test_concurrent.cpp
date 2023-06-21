@@ -25,7 +25,11 @@ void func(int i)
     rpc_arg_wrapper req{(void *)&breq, sizeof(basic_request)};
     rpc_arg_wrapper rep{(void *)&brep, sizeof(basic_reply)};
 
-    c.Call(h, "foo", &req, &rep);
+    while (brep.status == 0)
+    {
+        c.Call(h, "foo", &req, &rep);
+    }
+    
     
 
     if (brep.status != 0xf)

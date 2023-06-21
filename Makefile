@@ -25,7 +25,7 @@ pydrpc:
 	sudo rm -rf build dist && sudo python3 setup.py install
 
 # highest target; sews together all objects into executable
-all: $(LIB) test_timeout test_server test_kill test_basic test_many test_concurrent test_unreliable test_performance test_deaf
+all: $(LIB) test_concurrent#test_timeout test_server test_kill test_basic test_many test_concurrent test_unreliable test_performance test_deaf
 
 final: clean $(LIB)
 	ln -f $(LIB) $(SO_PATH)

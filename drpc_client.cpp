@@ -47,18 +47,18 @@ int drpc_client::do_rpc(drpc_host &srv, drpc_msg &m)
     // target function
     {
         size_t len = m.target.size();
-        send(sockfd, &len, sizeof(size_t), MSG_WAITALL);
-        send(sockfd, m.target.c_str(), len, MSG_WAITALL);
+        send(sockfd, &len, sizeof(size_t), MSG_WAITALL | MSG_NOSIGNAL);
+        send(sockfd, m.target.c_str(), len, MSG_WAITALL | MSG_NOSIGNAL);
     }
     // request args
     {
-        send(sockfd, &m.req->len, sizeof(size_t), MSG_WAITALL);
-        send(sockfd, m.req->args, m.req->len, MSG_WAITALL);
+        send(sockfd, &m.req->len, sizeof(size_t), MSG_WAITALL | MSG_NOSIGNAL);
+        send(sockfd, m.req->args, m.req->len, MSG_WAITALL | MSG_NOSIGNAL);
     }
     // reply
     {
-        send(sockfd, &m.rep->len, sizeof(size_t), MSG_WAITALL);
-        send(sockfd, m.rep->args, m.rep->len, MSG_WAITALL);
+        send(sockfd, &m.rep->len, sizeof(size_t), MSG_WAITALL | MSG_NOSIGNAL);
+        send(sockfd, m.rep->args, m.rep->len, MSG_WAITALL | MSG_NOSIGNAL);
     }
     // checksum
     {

@@ -123,36 +123,6 @@ int drpc_server::run_server()
     return 0;
 }
 
-void sends(int sockfd, void *buf, size_t len)
-{
-    size_t sent = 0;
-    do
-    {
-        ssize_t n = send(sockfd, (uint8_t *)buf + sent, len - sent, MSG_NOSIGNAL);
-        if (n == -1)
-        {
-            perror("Error sending on stream socket");
-            return;
-        }
-        sent += n;
-    } while (sent < len);
-}
-
-void recvs(int sockfd, void *buf, size_t len)
-{
-    size_t recvd = 0;
-    do
-    {
-        ssize_t n = recv(sockfd, (uint8_t *)buf + recvd, len - recvd, 0);
-        if (n == -1)
-        {
-            perror("Error recving on stream socket");
-            exit(1);
-        }
-        recvd += n;
-    } while (recvd < len);
-}
-
 void drpc_server::parse_rpc(int sockfd)
 {
     rpc_arg_wrapper *req = new rpc_arg_wrapper;
@@ -166,23 +136,23 @@ void drpc_server::parse_rpc(int sockfd)
     sock_lock.lock();
     {
         size_t len;
-        recvs(sockfd, &len, sizeof(size_t));
+        recv(sockfd, &len, sizeof(size_t), MSG_WAITALL);
         char *buf = (char *)malloc(len);
-        recvs(sockfd, buf, len);
+        recv(sockfd, buf, len, MSG_WAITALL);
         m.target = std::string(buf, len);
         free(buf);
     }
     // request args
     {
-        recvs(sockfd, &m.req->len, sizeof(size_t));
+        recv(sockfd, &m.req->len, sizeof(size_t), MSG_WAITALL);
         m.req->args = (void *)malloc(m.req->len);
-        recvs(sockfd, m.req->args, m.req->len);
+        recv(sockfd, m.req->args, m.req->len, MSG_WAITALL);
     }
     // reply
     {
-        recvs(sockfd, &m.rep->len, sizeof(size_t));
+        recv(sockfd, &m.rep->len, sizeof(size_t), MSG_WAITALL);
         m.rep->args = (void *)malloc(m.rep->len);
-        recvs(sockfd, m.rep->args, m.rep->len);
+        recv(sockfd, m.rep->args, m.rep->len, MSG_WAITALL);
     }
     // checksum
     {
@@ -217,8 +187,8 @@ void drpc_server::stub(drpc_msg m, int sockfd, int my_id)
         // send RPC reply
         // reply
         sock_lock.lock();
-        sends(sockfd, &m.rep->len, sizeof(size_t));
-        sends(sockfd, m.rep->args, m.rep->len);
+        send(sockfd, &m.rep->len, sizeof(size_t), MSG_WAITALL | MSG_NOSIGNAL);
+        send(sockfd, m.rep->args, m.rep->len, MSG_WAITALL | MSG_NOSIGNAL);
         sock_lock.unlock();
     }
 
