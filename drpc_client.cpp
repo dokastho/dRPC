@@ -1,10 +1,13 @@
 #include "drpc.h"
 #include <string>
-#include <sys/socket.h>
 #include <netdb.h>      // gethostbyname(), struct hostent
-#include <netinet/in.h> // struct sockaddr_in
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <cerrno>
 #include <string.h>
-#include <unistd.h> //close
 
 drpc_client::drpc_client() : timeout_val(DEFAULT_TIMEOUT) {}
 
@@ -36,6 +39,18 @@ int drpc_client::do_rpc(drpc_host &srv, drpc_msg &m)
     memcpy(&(addr.sin_addr), host->h_addr, host->h_length);
     addr.sin_port = htons(srv.port);
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0) {
+        perror("Failed to create socket.");
+        return 1;
+    }
+
+    struct timeval tv = {0, timeout_val * 1000}; // sleep for TIMEOUT ms
+
+    if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(tv)) < 0) {
+        perror("Failed to set socket receive timeout.");
+        return 1;
+    }
+
 
     if (connect(sockfd, (sockaddr *)&addr, sizeof(addr)) == -1)
     {
@@ -68,27 +83,13 @@ int drpc_client::do_rpc(drpc_host &srv, drpc_msg &m)
     // receive RPC reply
     // reply
     {
-        fd_set readfds;
-        FD_ZERO(&readfds);
-        FD_SET(sockfd, &readfds);
-        struct timeval tv = {0, timeout_val * 1000}; // sleep for TIMEOUT ms
-
-        if (select(sockfd + 1, &readfds, NULL, NULL, &tv) < 0)
+        ssize_t r = recv(sockfd, &m.rep->len, sizeof(size_t), MSG_WAITALL);
+        // only call a second time if not timeout
+        if (r != -1)
         {
-            // error or timeout
-            perror("client recv error");
-            // noop
-        }
-        if (FD_ISSET(sockfd, &readfds))
-        {
-            recv(sockfd, &m.rep->len, sizeof(size_t), MSG_WAITALL);
             recv(sockfd, m.rep->args, m.rep->len, MSG_WAITALL);
         }
-        else
-        {
-            // the socket timedout
-            // return 0
-        }
+        
     }
 
     close(sockfd);
