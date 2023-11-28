@@ -41,6 +41,7 @@ private:
     std::mutex sock_lock, kill_lock;
     std::map<int, std::thread> threads;
     Channel<int> finished_threads;
+    short port = 0;
     bool alive;
 
     void parse_rpc(int);
@@ -61,6 +62,8 @@ public:
     bool is_alive();
 
     void kill();
+
+    short get_port();
 };
 
 class drpc_client

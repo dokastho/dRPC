@@ -57,6 +57,11 @@ void drpc_server::kill()
     kill_lock.unlock();
 }
 
+short drpc_server::get_port()
+{
+    return port;
+}
+
 void drpc_server::start()
 {
     // make it run on another thread, and join in dtor to prevent invalid reads
@@ -93,6 +98,17 @@ int drpc_server::run_server()
         perror("port");
         return -1;
     }
+
+    socklen_t length = sizeof(addr);
+    if (getsockname(sockfd, (sockaddr *)&addr, &length) == -1)
+    {
+        perror("Error getting port of socket");
+        //exit(1);
+        return -1;
+    }
+    // Use ntohs to convert from network byte order to host byte order.
+    port = ntohs(addr.sin_port);
+
     listen(sockfd, SOCK_BUF_SIZE);
 
     while (is_alive())
