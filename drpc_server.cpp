@@ -57,9 +57,9 @@ void drpc_server::kill()
     kill_lock.unlock();
 }
 
-short drpc_server::get_port()
+drpc_host drpc_server::get_host()
 {
-    return port;
+    return my_host;
 }
 
 void drpc_server::start()
@@ -103,11 +103,11 @@ int drpc_server::run_server()
     if (getsockname(sockfd, (sockaddr *)&addr, &length) == -1)
     {
         perror("Error getting port of socket");
-        //exit(1);
+        // exit(1);
         return -1;
     }
     // Use ntohs to convert from network byte order to host byte order.
-    port = ntohs(addr.sin_port);
+    my_host.port = ntohs(addr.sin_port);
 
     listen(sockfd, SOCK_BUF_SIZE);
 
@@ -185,7 +185,6 @@ void drpc_server::parse_rpc(int sockfd)
         threads[complete_thread_id].join();
         threads.erase(complete_thread_id);
     }
-
 
     // call function and save random thread id
     int t_id = rand();
