@@ -30,10 +30,10 @@ int drpc_client::do_rpc(drpc_host &srv, drpc_msg &m)
     // connect to drpc server port
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
-    struct hostent *host = gethostbyname(srv.hostname.c_str());
+    struct hostent *host = gethostbyname(srv.hostname);
     if (host == nullptr)
     {
-        fprintf(stderr, "%s: unknown host\n", srv.hostname.c_str());
+        fprintf(stderr, "%s: unknown host\n", srv.hostname);
         return 1;
     }
     memcpy(&(addr.sin_addr), host->h_addr, host->h_length);

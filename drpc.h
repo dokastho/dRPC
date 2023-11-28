@@ -8,6 +8,7 @@
 
 #include "Channel.h"
 
+#define HOSTNAME_LEN 16
 #define SOCK_BUF_SIZE 50
 #define DEFAULT_TIMEOUT 500  // in ms
 
@@ -26,7 +27,7 @@ struct drpc_msg
 
 struct drpc_host
 {
-    std::string hostname;
+    char hostname[HOSTNAME_LEN];
     short port;
 };
 
