@@ -15,7 +15,7 @@
 drpc_server::drpc_server(drpc_host &host_args, void *srv_ptr_arg) : my_host(host_args)
 {
     srv_ptr = srv_ptr_arg;
-    alive = true;
+    alive = false;
 }
 
 drpc_server::~drpc_server()
@@ -59,6 +59,10 @@ void drpc_server::kill()
 
 drpc_host drpc_server::get_host()
 {
+    while (!is_alive())
+    {
+        std::this_thread::yield();
+    }
     return my_host;
 }
 
@@ -108,6 +112,9 @@ int drpc_server::run_server()
     }
     // Use ntohs to convert from network byte order to host byte order.
     my_host.port = ntohs(addr.sin_port);
+    kill_lock.lock();
+    alive = true;
+    kill_lock.unlock();
 
     listen(sockfd, SOCK_BUF_SIZE);
 
