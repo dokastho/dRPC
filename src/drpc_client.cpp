@@ -1,6 +1,6 @@
 #include "drpc.h"
 #include <string>
-#include <netdb.h>      // gethostbyname(), struct hostent
+#include <netdb.h> // gethostbyname(), struct hostent
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -12,6 +12,8 @@
 drpc_client::drpc_client() : timeout_val(DEFAULT_TIMEOUT) {}
 
 drpc_client::drpc_client(const int timeout) : timeout_val(timeout) {}
+
+drpc_client::drpc_client(const int timeout, bool block) : timeout_val(timeout), blocking(block) {}
 
 int drpc_client::Call(drpc_host &srv, std::string funct, rpc_arg_wrapper *args, rpc_arg_wrapper *err)
 {
@@ -39,18 +41,22 @@ int drpc_client::do_rpc(drpc_host &srv, drpc_msg &m)
     memcpy(&(addr.sin_addr), host->h_addr, host->h_length);
     addr.sin_port = htons(srv.port);
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0) {
+    if (sockfd < 0)
+    {
         perror("Failed to create socket.");
         return 1;
     }
 
     struct timeval tv = {0, timeout_val * 1000}; // sleep for TIMEOUT ms
 
-    if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(tv)) < 0) {
-        perror("Failed to set socket receive timeout.");
-        return 1;
+    if (!blocking)
+    {
+        if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(tv)) < 0)
+        {
+            perror("Failed to set socket receive timeout.");
+            return 1;
+        }
     }
-
 
     if (connect(sockfd, (sockaddr *)&addr, sizeof(addr)) == -1)
     {
@@ -89,7 +95,6 @@ int drpc_client::do_rpc(drpc_host &srv, drpc_msg &m)
         {
             recv(sockfd, m.rep->args, m.rep->len, MSG_WAITALL);
         }
-        
     }
 
     close(sockfd);

@@ -5,6 +5,7 @@
 #include <string>
 #include <mutex>
 #include <thread>
+#include <string.h>
 
 #include "Channel.h"
 
@@ -29,6 +30,16 @@ struct drpc_host
 {
     char hostname[HOSTNAME_LEN];
     short port;
+
+    bool operator==(const drpc_host &rhs)
+    {
+        return port == rhs.port && (strcmp(hostname, rhs.hostname) == 0);
+    }
+
+    bool operator!=(const drpc_host &rhs)
+    {
+        return !(*this == rhs);
+    }
 };
 
 class drpc_server
@@ -70,10 +81,12 @@ class drpc_client
 private:
     int timeout_val;
     int do_rpc(drpc_host &, drpc_msg &);
+    bool blocking = false;
 
 public:
     drpc_client();
     drpc_client(const int);
+    drpc_client(const int, bool);
     int Call(drpc_host &, std::string, rpc_arg_wrapper *, rpc_arg_wrapper *);
 };
 
