@@ -1,6 +1,8 @@
 import os
 import pytest
 
+BINDIR = "./bin"
+
 
 @pytest.fixture(autouse=True)
 def run_around_tests():
