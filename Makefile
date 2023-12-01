@@ -1,13 +1,18 @@
+SRCDIR   = src
+OBJDIR   = obj
+BINDIR   = bin
+TESTDIR	 = pytest
+
 # list of test drivers (with main()) for development
-TESTSOURCES = $(wildcard test*.cpp)
+TESTSOURCES = $(wildcard ${SRCDIR}/test*.cpp)
 # names of test executables
-TESTS       = $(TESTSOURCES:%.cpp=%)
+TESTS       = $(TESTSOURCES:$(SRCDIR)/%.cpp=$(BINDIR)/%)
 
 # list of sources used in project
-SOURCES 	= $(wildcard *.cpp)
-SOURCES     := $(filter-out $(TESTSOURCES), $(SOURCES))
+SOURCES  := $(wildcard $(SRCDIR)/*.cpp)
+SOURCES  := $(filter-out $(TESTSOURCES), $(SOURCES))
 # list of objects used in project
-OBJECTS		= $(SOURCES:%.cpp=%.o)
+OBJECTS  := $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 
 SO_PATH = $(LD_LIBRARY_PATH)
 
@@ -16,50 +21,34 @@ LIB = drpc.so
 #Default Flags
 CXXFLAGS = -std=c++14 -Wconversion -Wall -Werror -Wextra -pedantic -pthread
 
+# highest target; sews together all objects into executable
+all: $(LIB) $(TESTS)
+
+fast: CXXFLAGS += -ofast
+fast: clean all
+
 # make debug - will compile "all" with $(CXXFLAGS) and the -g flag
 #              also defines DEBUG so that "#ifdef DEBUG /*...*/ #endif" works
 debug: CXXFLAGS += -g3 -DDEBUG
 debug: clean all
 
-pydrpc:
-	sudo rm -rf build dist && sudo python3 setup.py install
-
-# highest target; sews together all objects into executable
-all: $(LIB) test_timeout test_server test_kill test_basic test_many test_concurrent test_unreliable test_performance test_deaf
-
-final: clean $(LIB)
-	ln -f $(LIB) $(SO_PATH)
+test: $(TESTS)
+	@pytest
 
 $(LIB): $(OBJECTS)
-	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $(LIB) -shared
+	$(CXX) $(CXXFLAGS) $(OBJECTS) -o ${OBJDIR}/$(LIB) -shared
+	ln -f ${OBJDIR}/$(LIB) $(SO_PATH)
 
 clean:
-	rm -rf $(OBJECTS) $(EXECUTABLE) $(TESTS) $(PARTIAL_SUBMITFILE) $(FULL_SUBMITFILE)
+	rm -rf ${OBJDIR} ${BINDIR} 
 
 headers:
-	cp ../channel/Channel.h .
+	cp ../channel/Channel.h ./${SRCDIR}
 
-# test1: test1.cpp $(LIB)
-# 	$(CXX) $(CXXFLAGS) -o $@ $^
-test_server: test_server.cpp $(LIB)
-	$(CXX) $(CXXFLAGS) -o $@ $^
-test_kill: test_kill.cpp $(LIB)
-	$(CXX) $(CXXFLAGS) -o $@ $^
-test_basic: test_basic.cpp $(LIB)
-	$(CXX) $(CXXFLAGS) -o $@ $^
-test_many: test_many.cpp $(LIB)
-	$(CXX) $(CXXFLAGS) -o $@ $^
-test_concurrent: test_concurrent.cpp $(LIB)
-	$(CXX) $(CXXFLAGS) -o $@ $^
-test_unreliable: test_unreliable.cpp $(LIB)
-	$(CXX) $(CXXFLAGS) -o $@ $^
-test_performance: test_performance.cpp $(LIB)
-	$(CXX) $(CXXFLAGS) -o $@ $^
-test_deaf: test_deaf.cpp $(LIB)
-	$(CXX) $(CXXFLAGS) -o $@ $^
-test_timeout: test_timeout.cpp $(LIB)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+$(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.cpp
+	@mkdir -p ${OBJDIR}
+	$(CXX) $(CXXFLAGS) -fPIC -c $< -o $@
 
-# rule for creating objects
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -fPIC -g -c $*.cpp
+$(TESTS): $(BINDIR)/% : $(SRCDIR)/%.cpp $(SO_PATH)/$(LIB)
+	@mkdir -p ${BINDIR}
+	$(CXX) $(CXXFLAGS) -lm -I. -o $@ $^
