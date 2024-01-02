@@ -6,6 +6,8 @@
 #include <mutex>
 #include <thread>
 #include <string.h>
+#include "openssl/sha.h"
+#include "openssl/tls1.h"
 
 #include "Channel.h"
 

@@ -36,7 +36,7 @@ test: $(TESTS)
 	@pytest
 
 $(LIB): $(OBJECTS)
-	$(CXX) $(CXXFLAGS) $(OBJECTS) -o ${OBJDIR}/$(LIB) -shared
+	$(CXX) $(CXXFLAGS) $(OBJECTS) -o ${OBJDIR}/$(LIB) -I/opt/ssl/include/ -L/opt/ssl/lib/ -lcrypto -shared
 	ln -f ${OBJDIR}/$(LIB) $(SO_PATH)
 
 clean:
