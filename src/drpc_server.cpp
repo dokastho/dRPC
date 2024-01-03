@@ -219,9 +219,8 @@ void drpc_server::stub(drpc_msg m, int sockfd, int my_id)
         target_func(srv_ptr, m);
         // send RPC reply
         // reply
-        sock_lock.lock();
+        std::lock_guard<std::mutex> lg(sock_lock);
         secure_send(sockfd, m.rep->args, m.rep->len);
-        sock_lock.unlock();
     }
 
     free(m.req->args);
