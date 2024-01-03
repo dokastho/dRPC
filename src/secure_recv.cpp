@@ -8,7 +8,6 @@ ssize_t secure_recv(int sockfd, void **data_buf)
 {
     unsigned int actual_cksum;
     rpc_len_t len_sec{0, 0};
-    ssize_t r;
     if (recv(sockfd, &len_sec, sizeof(rpc_len_t), MSG_WAITALL) == -1)
         return -1;
     actual_cksum = len_sec.cksum;
@@ -18,7 +17,7 @@ ssize_t secure_recv(int sockfd, void **data_buf)
     {
         return -1;
     }
-    int data_len = len_sec.len;
+    size_t data_len = len_sec.len;
 
     bool data_buf_is_null = false;
     if (!*data_buf)
