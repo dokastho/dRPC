@@ -14,6 +14,8 @@
 #define DEFAULT_TIMEOUT 500  // in ms
 
 extern unsigned int crc32(const void *buf, size_t size);
+extern int secure_send(int sockfd, void* data_buf, size_t data_len);
+extern ssize_t secure_recv(int sockfd, void **data_buf);
 
 struct rpc_arg_wrapper
 {
@@ -97,17 +99,5 @@ public:
     drpc_client(const int, bool);
     int Call(drpc_host &, std::string, rpc_arg_wrapper *, rpc_arg_wrapper *);
 };
-
-inline long long int make_hash(const void* data, size_t data_len)
-{
-    unsigned char hash[SHA512_DIGEST_LENGTH];
-    SHA512_CTX sha512;
-    SHA512_Init(&sha512);
-    SHA512_Update(&sha512, data, data_len);
-    SHA512_Final(hash, &sha512);
-    
-    char* endptr = ((char*)hash + SHA512_DIGEST_LENGTH);
-    return strtoll((char*)hash, &endptr, 16);
-}
 
 #endif

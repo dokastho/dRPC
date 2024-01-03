@@ -66,52 +66,16 @@ int drpc_client::do_rpc(drpc_host &srv, drpc_msg &m)
 
     // send RPC
     // target function
-    {
-        rpc_len_t len_sec{m.target.size(), 0};
-        len_sec.cksum = crc32(&len_sec, sizeof(rpc_len_t));
-
-        rpc_len_t data_sec{len_sec.len, 0};
-        data_sec.cksum = crc32(m.target.c_str(), sizeof(len_sec.len));
-
-        send(sockfd, &len_sec, sizeof(rpc_len_t), MSG_WAITALL | MSG_NOSIGNAL);
-        send(sockfd, m.target.c_str(), len_sec.len, MSG_WAITALL | MSG_NOSIGNAL);
-        send(sockfd, &data_sec, sizeof(rpc_len_t), MSG_WAITALL | MSG_NOSIGNAL);
-    }
+    secure_send(sockfd, (void*)m.target.c_str(), m.target.size());
     // request args
-    {
-        rpc_len_t len_sec{m.req->len, 0};
-        len_sec.cksum = crc32(&len_sec, sizeof(rpc_len_t));
-
-        rpc_len_t data_sec{len_sec.len, 0};
-        data_sec.cksum = crc32(m.req->args, sizeof(len_sec.len));
-
-        send(sockfd, &len_sec, sizeof(rpc_len_t), MSG_WAITALL | MSG_NOSIGNAL);
-        send(sockfd, m.req->args, len_sec.len, MSG_WAITALL | MSG_NOSIGNAL);
-        send(sockfd, &data_sec, sizeof(rpc_len_t), MSG_WAITALL | MSG_NOSIGNAL);
-    }
+    secure_send(sockfd, m.req->args, m.req->len);
     // reply
-    {
-        rpc_len_t len_sec{m.rep->len, 0};
-        len_sec.cksum = crc32(&len_sec, sizeof(rpc_len_t));
-
-        rpc_len_t data_sec{len_sec.len, 0};
-        data_sec.cksum = crc32(m.rep->args, sizeof(len_sec.len));
-
-        send(sockfd, &len_sec, sizeof(rpc_len_t), MSG_WAITALL | MSG_NOSIGNAL);
-        send(sockfd, m.rep->args, m.rep->len, MSG_WAITALL | MSG_NOSIGNAL);
-        send(sockfd, &data_sec, sizeof(rpc_len_t), MSG_WAITALL | MSG_NOSIGNAL);
-    }
+    secure_send(sockfd, m.rep->args, m.rep->len);
 
     // receive RPC reply
     // reply
-    {
-        ssize_t r = recv(sockfd, &m.rep->len, sizeof(size_t), MSG_WAITALL);
-        // only call a second time if not timeout
-        if (r != -1)
-        {
-            recv(sockfd, m.rep->args, m.rep->len, MSG_WAITALL);
-        }
-    }
+    void** data_ptr = &m.rep->args;
+    secure_recv(sockfd, data_ptr);
 
     close(sockfd);
 

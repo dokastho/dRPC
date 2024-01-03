@@ -1,0 +1,50 @@
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+
+#include "drpc.h"
+
+ssize_t secure_recv(int sockfd, void **data_buf)
+{
+    unsigned int actual_cksum;
+    rpc_len_t len_sec{0, 0};
+    ssize_t r;
+    if (recv(sockfd, &len_sec, sizeof(rpc_len_t), MSG_WAITALL) == -1)
+        return -1;
+    actual_cksum = len_sec.cksum;
+    len_sec.cksum = 0;
+
+    if (actual_cksum != crc32(&len_sec, sizeof(rpc_len_t)))
+    {
+        return -1;
+    }
+    int data_len = len_sec.len;
+
+    bool data_buf_is_null = false;
+    if (!*data_buf)
+    {
+        data_buf_is_null = true;
+        *data_buf = malloc(data_len);
+    }
+
+    if (recv(sockfd, *data_buf, data_len, MSG_WAITALL) == -1)
+        return -1;
+
+    // receive data cheksum bytes
+    rpc_len_t data_sec{0, 0};
+    if (recv(sockfd, &data_sec, sizeof(rpc_len_t), MSG_WAITALL) == -1)
+        return -1;
+
+    // use data_len as a checksum proxy to validate the data checksum bytes
+    if (data_sec.len != data_len || data_sec.cksum != crc32(*data_buf, data_len))
+    {
+        if (data_buf_is_null)
+        {
+            free(data_buf);
+            data_buf = nullptr;
+        }
+
+        return -1;
+    }
+    return data_len;
+}

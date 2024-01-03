@@ -162,32 +162,38 @@ void drpc_server::parse_rpc(int sockfd)
     // recv RPC
     // target function
     sock_lock.lock();
+    std::unique_lock<std::mutex> l(sock_lock);
     {
-        size_t len;
-        recv(sockfd, &len, sizeof(size_t), MSG_WAITALL);
-        char *buf = (char *)malloc(len);
-        recv(sockfd, buf, len, MSG_WAITALL);
-        m.target = std::string(buf, len);
-        free(buf);
+        void** data_buf_ptr = nullptr;
+        ssize_t n = secure_recv(sockfd, data_buf_ptr);
+        if (n == -1)
+            return;
+        
+        m.target = std::string((char*)*data_buf_ptr, n);
+        free(*data_buf_ptr);
     }
     // request args
     {
-        recv(sockfd, &m.req->len, sizeof(size_t), MSG_WAITALL);
-        m.req->args = (void *)malloc(m.req->len);
-        recv(sockfd, m.req->args, m.req->len, MSG_WAITALL);
+        void** data_buf_ptr = nullptr;
+        ssize_t n = secure_recv(sockfd, data_buf_ptr);
+        if (n == -1)
+            return;
+        
+        m.req->args = *data_buf_ptr;
+        m.req->len = n;
     }
     // reply
     {
-        recv(sockfd, &m.rep->len, sizeof(size_t), MSG_WAITALL);
-        m.rep->args = (void *)malloc(m.rep->len);
-        recv(sockfd, m.rep->args, m.rep->len, MSG_WAITALL);
-    }
-    // checksum
-    {
-        // todo
+        void** data_buf_ptr = nullptr;
+        ssize_t n = secure_recv(sockfd, data_buf_ptr);
+        if (n == -1)
+            return;
+        
+        m.rep->args = *data_buf_ptr;
+        m.rep->len = n;
     }
 
-    sock_lock.unlock();
+    l.unlock();
 
     // if all threads are busy, then wait for one to complete
     while (threads.size() >= SOCK_BUF_SIZE)
@@ -214,8 +220,7 @@ void drpc_server::stub(drpc_msg m, int sockfd, int my_id)
         // send RPC reply
         // reply
         sock_lock.lock();
-        send(sockfd, &m.rep->len, sizeof(size_t), MSG_WAITALL | MSG_NOSIGNAL);
-        send(sockfd, m.rep->args, m.rep->len, MSG_WAITALL | MSG_NOSIGNAL);
+        secure_send(sockfd, m.rep->args, m.rep->len);
         sock_lock.unlock();
     }
 
