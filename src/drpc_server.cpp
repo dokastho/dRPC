@@ -154,17 +154,19 @@ int drpc_server::run_server()
 void drpc_server::parse_rpc(int sockfd)
 {
     rpc_arg_wrapper *req = new rpc_arg_wrapper;
+    req->args = nullptr;
     rpc_arg_wrapper *rep = new rpc_arg_wrapper;
+    rep->args = nullptr;
     drpc_msg m;
     m.req = req;
     m.rep = rep;
 
     // recv RPC
     // target function
-    sock_lock.lock();
     std::unique_lock<std::mutex> l(sock_lock);
     {
-        void** data_buf_ptr = nullptr;
+        char* target_cstr = nullptr;
+        void** data_buf_ptr = (void**)&target_cstr;
         ssize_t n = secure_recv(sockfd, data_buf_ptr);
         if (n == -1)
             return;
@@ -174,22 +176,20 @@ void drpc_server::parse_rpc(int sockfd)
     }
     // request args
     {
-        void** data_buf_ptr = nullptr;
+        void** data_buf_ptr = &m.req->args;
         ssize_t n = secure_recv(sockfd, data_buf_ptr);
         if (n == -1)
             return;
         
-        m.req->args = *data_buf_ptr;
         m.req->len = n;
     }
     // reply
     {
-        void** data_buf_ptr = nullptr;
+        void** data_buf_ptr = &m.rep->args;
         ssize_t n = secure_recv(sockfd, data_buf_ptr);
         if (n == -1)
             return;
         
-        m.rep->args = *data_buf_ptr;
         m.rep->len = n;
     }
 

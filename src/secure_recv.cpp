@@ -39,8 +39,8 @@ ssize_t secure_recv(int sockfd, void **data_buf)
     {
         if (data_buf_is_null)
         {
-            free(data_buf);
-            data_buf = nullptr;
+            free(*data_buf);
+            *data_buf = nullptr;
         }
 
         return -1;
