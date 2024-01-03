@@ -11,6 +11,7 @@ int secure_send(int sockfd, void* data_buf, size_t data_len)
 
     rpc_len_t data_sec{len_sec.len, 0};
     data_sec.cksum = crc32(data_buf, data_len);
+    data_sec.cksum = crc32(&data_sec, sizeof(rpc_len_t));
 
     send(sockfd, &len_sec, sizeof(rpc_len_t), MSG_WAITALL | MSG_NOSIGNAL);
     send(sockfd, data_buf, len_sec.len, MSG_WAITALL | MSG_NOSIGNAL);
