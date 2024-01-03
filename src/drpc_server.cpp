@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <unistd.h>
+#include "openssl/tls1.h"
 
 #include "drpc.h"
 #include "Channel.h"
@@ -79,6 +80,10 @@ int drpc_server::run_server()
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = INADDR_ANY;
     addr.sin_port = htons(my_host.port);
+
+    // TLS stuff for later
+    // context = SSL_CTX_new(TLS_method());
+    // SSL_CTX_set_min_proto_version(context, TLS1_3_VERSION);
 
     // start server
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);

@@ -67,23 +67,39 @@ int drpc_client::do_rpc(drpc_host &srv, drpc_msg &m)
     // send RPC
     // target function
     {
-        size_t len = m.target.size();
-        send(sockfd, &len, sizeof(size_t), MSG_WAITALL | MSG_NOSIGNAL);
-        send(sockfd, m.target.c_str(), len, MSG_WAITALL | MSG_NOSIGNAL);
+        rpc_len_t len_sec{m.target.size(), 0};
+        len_sec.cksum = crc32(&len_sec, sizeof(rpc_len_t));
+
+        rpc_len_t data_sec{len_sec.len, 0};
+        data_sec.cksum = crc32(m.target.c_str(), sizeof(len_sec.len));
+
+        send(sockfd, &len_sec, sizeof(rpc_len_t), MSG_WAITALL | MSG_NOSIGNAL);
+        send(sockfd, m.target.c_str(), len_sec.len, MSG_WAITALL | MSG_NOSIGNAL);
+        send(sockfd, &data_sec, sizeof(rpc_len_t), MSG_WAITALL | MSG_NOSIGNAL);
     }
     // request args
     {
-        send(sockfd, &m.req->len, sizeof(size_t), MSG_WAITALL | MSG_NOSIGNAL);
-        send(sockfd, m.req->args, m.req->len, MSG_WAITALL | MSG_NOSIGNAL);
+        rpc_len_t len_sec{m.req->len, 0};
+        len_sec.cksum = crc32(&len_sec, sizeof(rpc_len_t));
+
+        rpc_len_t data_sec{len_sec.len, 0};
+        data_sec.cksum = crc32(m.req->args, sizeof(len_sec.len));
+
+        send(sockfd, &len_sec, sizeof(rpc_len_t), MSG_WAITALL | MSG_NOSIGNAL);
+        send(sockfd, m.req->args, len_sec.len, MSG_WAITALL | MSG_NOSIGNAL);
+        send(sockfd, &data_sec, sizeof(rpc_len_t), MSG_WAITALL | MSG_NOSIGNAL);
     }
     // reply
     {
-        send(sockfd, &m.rep->len, sizeof(size_t), MSG_WAITALL | MSG_NOSIGNAL);
+        rpc_len_t len_sec{m.rep->len, 0};
+        len_sec.cksum = crc32(&len_sec, sizeof(rpc_len_t));
+
+        rpc_len_t data_sec{len_sec.len, 0};
+        data_sec.cksum = crc32(m.rep->args, sizeof(len_sec.len));
+
+        send(sockfd, &len_sec, sizeof(rpc_len_t), MSG_WAITALL | MSG_NOSIGNAL);
         send(sockfd, m.rep->args, m.rep->len, MSG_WAITALL | MSG_NOSIGNAL);
-    }
-    // checksum
-    {
-        // todo
+        send(sockfd, &data_sec, sizeof(rpc_len_t), MSG_WAITALL | MSG_NOSIGNAL);
     }
 
     // receive RPC reply
