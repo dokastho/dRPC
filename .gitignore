@@ -64,5 +64,6 @@ test_deaf
 *.egg-info
 build/*
 dist/*
+*.pem
 
 Channel.h

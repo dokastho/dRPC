@@ -8,13 +8,10 @@
 #include <stdlib.h>
 #include <iostream>
 #include <unistd.h>
-#include "openssl/ssl.h"
+#include <csignal>
 
 #include "drpc.h"
 #include "Channel.h"
-
-extern SSL_CTX *create_context();
-extern void configure_context(SSL_CTX *ctx);
 
 drpc_server::drpc_server(drpc_host &host_args, void *srv_ptr_arg) : my_host(host_args)
 {
@@ -84,9 +81,7 @@ int drpc_server::run_server()
     addr.sin_addr.s_addr = INADDR_ANY;
     addr.sin_port = htons(my_host.port);
 
-    // TLS stuff for later
-    // context = SSL_CTX_new(TLS_method());
-    // SSL_CTX_set_min_proto_version(context, TLS1_3_VERSION);
+    signal(SIGPIPE, SIG_IGN);
 
     // start server
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -168,31 +163,31 @@ void drpc_server::parse_rpc(int sockfd)
     // target function
     std::unique_lock<std::mutex> l(sock_lock);
     {
-        char* target_cstr = nullptr;
-        void** data_buf_ptr = (void**)&target_cstr;
+        char *target_cstr = nullptr;
+        void **data_buf_ptr = (void **)&target_cstr;
         ssize_t n = secure_recv(sockfd, data_buf_ptr);
         if (n == -1)
             return;
-        
-        m.target = std::string((char*)*data_buf_ptr, n);
+
+        m.target = std::string((char *)*data_buf_ptr, n);
         free(*data_buf_ptr);
     }
     // request args
     {
-        void** data_buf_ptr = &m.req->args;
+        void **data_buf_ptr = &m.req->args;
         ssize_t n = secure_recv(sockfd, data_buf_ptr);
         if (n == -1)
             return;
-        
+
         m.req->len = n;
     }
     // reply
     {
-        void** data_buf_ptr = &m.rep->args;
+        void **data_buf_ptr = &m.rep->args;
         ssize_t n = secure_recv(sockfd, data_buf_ptr);
         if (n == -1)
             return;
-        
+
         m.rep->len = n;
     }
 
