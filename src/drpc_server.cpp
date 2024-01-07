@@ -8,10 +8,13 @@
 #include <stdlib.h>
 #include <iostream>
 #include <unistd.h>
-#include "openssl/tls1.h"
+#include "openssl/ssl.h"
 
 #include "drpc.h"
 #include "Channel.h"
+
+extern SSL_CTX *create_context();
+extern void configure_context(SSL_CTX *ctx);
 
 drpc_server::drpc_server(drpc_host &host_args, void *srv_ptr_arg) : my_host(host_args)
 {
