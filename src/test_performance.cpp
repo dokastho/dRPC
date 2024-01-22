@@ -11,7 +11,7 @@
 
 using std::chrono::milliseconds;
 
-void func(int i)
+void func(unsigned int i)
 {
     drpc_host h{"localhost", 8021};
     drpc_client c;
@@ -46,7 +46,7 @@ int main()
             threads.push_back(std::move(t));
         }
 
-        for (int i = 0; i < N; i++)
+        for (size_t i = 0; i < (size_t)N; i++)
         {
             threads[i].join();
         }

@@ -12,7 +12,7 @@
 std::mutex m;
 bool did_pass = true;
 
-void func(int i)
+void func(unsigned int i)
 {
     drpc_host h{"localhost", 8021};
     drpc_client c;
@@ -57,7 +57,7 @@ int main()
         threads.push_back(std::move(t));
     }
 
-    for (int i = 0; i < count; i++)
+    for (size_t i = 0; i < (size_t)count; i++)
     {
         threads[i].join();
     }

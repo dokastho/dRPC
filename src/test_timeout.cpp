@@ -24,7 +24,7 @@ void func(int me)
     {
         status = c.Call(shost, "slow", &req, &rep);
     }
-    passes[me] = true;
+    passes[(size_t)me] = true;
 }
 
 int main()

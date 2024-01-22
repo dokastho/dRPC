@@ -29,7 +29,7 @@ struct drpc_msg
 struct drpc_host
 {
     char hostname[HOSTNAME_LEN];
-    short port;
+    uint16_t port;
 
     bool operator==(const drpc_host &rhs)
     {

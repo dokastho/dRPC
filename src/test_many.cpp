@@ -10,9 +10,9 @@ int main()
     drpc_host h{"localhost", 8021};
     drpc_client c;
 
-    int count = 100;
+    size_t count = 100;
 
-    for (int i = 0; i < count; i++)
+    for (unsigned int i = 0; i < count; i++)
     {
         std::string s = "many test client #" + std::to_string(i);
         basic_request breq{"", 0};

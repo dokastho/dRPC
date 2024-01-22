@@ -38,7 +38,7 @@ int drpc_client::do_rpc(drpc_host &srv, drpc_msg &m)
         fprintf(stderr, "%s: unknown host\n", srv.hostname);
         return 1;
     }
-    memcpy(&(addr.sin_addr), host->h_addr, host->h_length);
+    memcpy(&(addr.sin_addr), host->h_addr, (size_t)host->h_length);
     addr.sin_port = htons(srv.port);
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
