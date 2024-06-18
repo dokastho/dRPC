@@ -1,5 +1,6 @@
 #include "drpc.h"
 #include "test_rpcs.h"
+#include <cstddef>
 #include <iostream>
 #include <cassert>
 #include <string>
@@ -12,7 +13,7 @@
 std::mutex m;
 bool did_pass = true;
 
-void func(int i)
+void func(unsigned int i)
 {
     drpc_host h{"localhost", 8021};
     drpc_client c;
@@ -55,7 +56,7 @@ int main()
 
     for (int i = 0; i < count; i++)
     {
-        threads[i].join();
+        threads[(size_t)i].join();
     }
 
     assert(did_pass);

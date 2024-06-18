@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <iostream>
 #include <vector>
 #include <thread>
@@ -24,7 +25,7 @@ void func(int me)
     {
         status = c.Call(shost, "slow", &req, &rep);
     }
-    passes[me] = true;
+    passes[(uint32_t)me] = true;
 }
 
 int main()

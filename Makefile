@@ -1,6 +1,7 @@
 SRCDIR   = src
 OBJDIR   = obj
 BINDIR   = bin
+LIBDIR   = lib
 TESTDIR	 = pytest
 
 # list of test drivers (with main()) for development
@@ -14,7 +15,7 @@ SOURCES  := $(filter-out $(TESTSOURCES), $(SOURCES))
 # list of objects used in project
 OBJECTS  := $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 
-SO_PATH = $(LD_LIBRARY_PATH)
+SO_PATH = $(LIBDIR)
 
 LIB = drpc.so
 
@@ -37,10 +38,11 @@ test: $(TESTS)
 
 $(LIB): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(OBJECTS) -o ${OBJDIR}/$(LIB) -shared
-	ln -f ${OBJDIR}/$(LIB) $(SO_PATH)
+	@mkdir -p ${LIBDIR}
+	cp ${OBJDIR}/$(LIB) $(SO_PATH)
 
 clean:
-	rm -rf ${OBJDIR} ${BINDIR} 
+	rm -rf ${OBJDIR} ${BINDIR} ${LIBDIR}
 
 headers:
 	cp ../channel/Channel.h ./${SRCDIR}

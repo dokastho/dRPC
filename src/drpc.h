@@ -7,7 +7,7 @@
 #include <thread>
 #include <string.h>
 
-#include "Channel.h"
+#include "../inc/Channel.h"
 
 #define HOSTNAME_LEN 16
 #define SOCK_BUF_SIZE 50

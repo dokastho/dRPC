@@ -10,7 +10,6 @@
 #include <unistd.h>
 
 #include "drpc.h"
-#include "Channel.h"
 
 drpc_server::drpc_server(drpc_host &host_args, void *srv_ptr_arg) : my_host(host_args)
 {
@@ -111,7 +110,7 @@ int drpc_server::run_server()
         return -1;
     }
     // Use ntohs to convert from network byte order to host byte order.
-    my_host.port = ntohs(addr.sin_port);
+    my_host.port = (short)ntohs(addr.sin_port);
     kill_lock.lock();
     alive = true;
     kill_lock.unlock();

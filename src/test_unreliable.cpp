@@ -1,5 +1,7 @@
 #include "drpc.h"
 #include "test_rpcs.h"
+#include <cstddef>
+#include <cstdint>
 #include <iostream>
 #include <cassert>
 #include <string>
@@ -20,7 +22,7 @@ void func(int i)
     std::string s = "concurrent test client #" + std::to_string(i);
     basic_request breq{"", 0};
     strcpy(breq.name, s.c_str());
-    breq.seed = i;
+    breq.seed = (uint32_t)i;
     basic_reply brep{0, 0};
     rpc_arg_wrapper req{(void *)&breq, sizeof(basic_request)};
     rpc_arg_wrapper rep{(void *)&brep, sizeof(basic_reply)};
@@ -59,7 +61,7 @@ int main()
 
     for (int i = 0; i < count; i++)
     {
-        threads[i].join();
+        threads[(size_t)i].join();
     }
 
     assert(did_pass);

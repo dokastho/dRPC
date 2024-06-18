@@ -67,3 +67,4 @@ dist/*
 
 Channel.h
 *.pem
+.vscode-upload.json
