@@ -1,4 +1,3 @@
-#include <exception>
 #include <string>
 #include <sys/socket.h>
 #include <netdb.h>      // gethostbyname(), struct hostent
@@ -6,7 +5,6 @@
 #include <string.h>
 #include <thread>
 #include <stdlib.h>
-#include <iostream>
 #include <unistd.h>
 
 #include "drpc.h"

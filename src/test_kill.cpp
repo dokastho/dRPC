@@ -1,6 +1,4 @@
 #include "drpc.h"
-#include "test_rpcs.h"
-#include <thread>
 #include <iostream>
 #include <cassert>
 

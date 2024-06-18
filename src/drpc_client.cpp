@@ -7,7 +7,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <cerrno>
 #include <string.h>
 
 drpc_client::drpc_client() : timeout_val(DEFAULT_TIMEOUT) {}
