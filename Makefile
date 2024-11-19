@@ -1,7 +1,7 @@
 SRCDIR   = src
 OBJDIR   = obj
 BINDIR   = bin
-LIBDIR   = lib
+LIBDIR   = LIB
 TESTDIR	 = pytest
 
 # list of test drivers (with main()) for development
@@ -16,14 +16,16 @@ SOURCES  := $(filter-out $(TESTSOURCES), $(SOURCES))
 OBJECTS  := $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 
 SO_PATH = $(LIBDIR)
+O_PATH  = $(LIBDIR)
 
-LIB = drpc.so
+SOLIB = drpc.so
+LIB = drpc.o
 
 #Default Flags
 CXXFLAGS = -std=c++14 -Wconversion -Wall -Werror -Wextra -pedantic -pthread
 
 # highest target; sews together all objects into executable
-all: $(LIB) $(TESTS)
+all: $(SOLIB) $(LIB) $(TESTS)
 
 fast: CXXFLAGS += -ofast
 fast: clean all
@@ -36,10 +38,15 @@ debug: clean all
 test: $(TESTS)
 	@pytest
 
-$(LIB): $(OBJECTS)
-	$(CXX) $(CXXFLAGS) $(OBJECTS) -o ${OBJDIR}/$(LIB) -shared
+$(SOLIB): $(OBJECTS)
+	$(CXX) $(CXXFLAGS) $(OBJECTS) -o ${OBJDIR}/$(SOLIB) -shared
 	@mkdir -p ${LIBDIR}
-	cp ${OBJDIR}/$(LIB) $(SO_PATH)
+	cp ${OBJDIR}/$(SOLIB) $(SO_PATH)
+
+$(LIB): $(OBJECTS)
+	$(CXX) $(CXXFLAGS) $(OBJECTS) -c -o ${OBJDIR}/$(LIB)
+	@mkdir -p ${LIBDIR}
+	cp ${OBJDIR}/$(LIB) $(O_PATH)
 
 clean:
 	rm -rf ${OBJDIR} ${BINDIR} ${LIBDIR}
@@ -51,6 +58,6 @@ $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.cpp
 	@mkdir -p ${OBJDIR}
 	$(CXX) $(CXXFLAGS) -fPIC -c $< -o $@
 
-$(TESTS): $(BINDIR)/% : $(SRCDIR)/%.cpp $(SO_PATH)/$(LIB)
+$(TESTS): $(BINDIR)/% : $(SRCDIR)/%.cpp $(SO_PATH)/$(SOLIB)
 	@mkdir -p ${BINDIR}
 	$(CXX) $(CXXFLAGS) -lm -I. -o $@ $^
